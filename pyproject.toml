@@ -6,7 +6,9 @@ authors = ["Jethack"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.11"
+python = "~3.11"
+hy = "0.25"
+hyrule = "0.2.1"
 
 
 [build-system]
