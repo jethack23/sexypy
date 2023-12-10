@@ -87,14 +87,16 @@
 
 (defn parse [src]
   (setv tokens (simple-tokenizer src)
-        stack [])
-  (if (and tokens (= (get tokens 0) "(")) (tokens.pop)
-      (stack.append (Expression)))
+        stack []
+        rst [])
   (for [t tokens]
-    (cond (= t ")") (.append (get stack -2) (stack.pop))
+    (cond (= t ")") (do (setv e (stack.pop))
+                        (if stack
+                            (.append (get stack -1) e)
+                            (.append rst e)))
           (= t "(") (stack.append (Expression))
           True (.append (get stack -1) (categorize t))))
-  (stack.pop))
+  rst)
 
 ;;; compile.hy
 (defn const-compile [constant]
@@ -129,22 +131,26 @@
   (cond (isinstance expr Constant)
         (const-compile expr)
         
-        (isinstance (get expr.list 0) Constant)
-        (const-compile (get expr.list 0))
-        
         True
         (binop-compile expr)))
 
-(defn eval-compile [expr]
-  (ast.Expression :body (recur-compile expr)
-                  :lineno 0
-                  :col-offset 0
-                  :_fields #("body")))
+(defn expr-compile [expr]
+  (ast.Expr :value (recur-compile expr)
+            :lineno 0
+            :col-offset 0))
+
+(defn ast-compile [expr-list [mode "single"]]
+  (list (map (fn [e] (ast.Interactive
+                       :body [(expr-compile e)]))
+             expr-list)))
 
 (when (= __name__ "__main__")
-  (defn run-ast [st]
-    (print "python ver:" (ast.unparse st))
-    (print "result     " (eval (compile st "" "eval"))))
+  (defn run-ast [stl]
+    (print "\npython translation")
+    (print (.join "\n" (list (map str (map ast.unparse stl)))))
+    (print "\nresult")
+    (for [st stl]
+      (eval (compile st "" "single"))))
   (while True
-    (setv st (eval-compile (parse (input "calculate > "))))
+    (setv st (ast-compile (parse (input "calculate > "))))
     (run-ast st)))
