@@ -1,0 +1,71 @@
+(defclass Node []
+  (defn __init__ [self #* args #** kwargs]
+    (setv self.lineno 0)
+    (for [[k v] (kwargs.items)]
+      (setv (get self.__dict__ k) v))))
+
+(defclass Expression [Node]
+  (defn __init__ [self [tokens None] #** kwargs]
+    (.__init__ (super) #** kwargs)
+    (setv self.list (if tokens tokens []))
+    None)
+
+  (defn append [self t]
+    (.append self.list t))
+
+  (defn __repr__ [self [depth 0]]
+    (+ "Expr("
+       (.join ", " (lfor e self.list (repr e)))
+       ")"))
+
+  (defn __iter__ [self]
+    (iter self.list))
+
+  (defn __getitem__ [self idx]
+    (get self.list idx))
+
+  (defn __len__ [self]
+    (len self.list))
+
+  (defn [property] op [self]
+    (get self.list 0))
+
+  (defn [property] operands [self]
+    (get self.list (slice 1 None))))
+
+(defmacro def-exp-by-type [type]
+  `(defclass ~type [Expression]
+     (defn __repr__ [self [depth 0]]
+       (+ ~(str type)
+          "("
+          (.join ", " (lfor e self.list (repr e)))
+          ")"))))
+
+(def-exp-by-type Paren)
+(def-exp-by-type Bracket)
+(def-exp-by-type Brace)
+
+(defclass Symbol [Node]
+  (defn __init__ [self name #** kwargs]
+    (.__init__ (super #** kwargs))
+    (setv self.name name)
+    None)
+
+  (defn __repr__ [self]
+    (+ "Sym("
+       self.name
+       ")"))
+
+  (defn __eq__ [self other]
+    (= self.name other)))
+
+(defclass Constant [Node]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super #** kwargs))
+    (setv self.value value)
+    None)
+
+  (defn __repr__ [self]
+    (+ "Const("
+       (str self.value)
+       ")")))
