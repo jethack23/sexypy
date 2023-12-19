@@ -4,6 +4,8 @@
 
 (import collections [deque])
 
+(import functools [reduce])
+
 (import nodes *)
 
 (defn ast-compile [expr-list]
@@ -16,19 +18,36 @@
             :lineno 0
             :col-offset 0))
 
-(defn expr-compile [expr]
-  (cond 
-    (constant-p expr) (const-compile expr)
 
-    (unaryop-p expr) (unary-compile expr)
-    
-    True
-    (binop-compile expr)))
+(defn expr-compile [expr]
+  (cond (paren-p expr) (paren-compiler expr)
+        (bracket-p expr) (bracket-compiler expr)
+        (brace-p expr) (brace-compiler expr)
+        (constant-p expr) (constant-compile expr)
+        ))
+
+(defn paren-p [expr]
+  (isinstance expr Paren))
+
+(defn paren-compiler [expr]
+  (cond
+    (unaryop-p expr) (unaryop-compile expr)
+    (binop-p expr) (binop-compile expr)))
+
+(defn bracket-p [expr]
+  (isinstance expr Bracket))
+
+(defn bracket-compiler [expr])
+
+(defn brace-p [expr]
+  (isinstance expr Brace))
+
+(defn brace-compiler [expr])
 
 (defn constant-p [expr]
   (isinstance expr Constant))
 
-(defn const-compile [constant]
+(defn constant-compile [constant]
   (ast.Constant :value constant.value
                 :lineno 0
                 :col-offset 0))
@@ -42,9 +61,10 @@
   (and (in expr.op.name unaryop-dict)
        (= (len expr) 2)))
 
-(defn unary-compile [expr]
-  (ast.UnaryOp ((get unaryop-dict expr.op.name))
-               (expr-compile (get expr.list 1))
+(defn unaryop-compile [expr]
+  (setv [op operand] expr.list)
+  (ast.UnaryOp ((get unaryop-dict op.name))
+               (expr-compile operand)
                :lineno 0
                :col-offset 0))
 
@@ -62,20 +82,13 @@
                   "&" ast.BitAnd
                   "@" ast.MatMult})
 
+(defn binop-p [expr]
+  (and (in expr.op.name binop-dict)
+       (> (len expr) 2)))
+
 (defn binop-compile [expr]
-  (setv 
-    q (deque expr.list)
-    op (get binop-dict (. (q.popleft) name))
-    rst (expr-compile (q.popleft)))
-  (while q
-    (setv rst (ast.BinOp rst (op) (expr-compile (q.popleft))
-                         :lineno 0
-                         :col-offset 0)))
-  rst)
-
-
-
-
-
-;(print (ast.dump (get (ast-compile (parse "(+ 2 -1)")) 0) :indent 4))
-
+  (setv [op #* args] expr.list)
+  (reduce (fn [x y] (ast.BinOp x ((get binop-dict op.name)) y
+                               :lineno 0
+                               :col-offset 0))
+          (map expr-compile args)))
