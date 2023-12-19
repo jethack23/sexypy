@@ -1,26 +1,26 @@
+(require hyrule *)
 (import collections [deque])
 
-(import nodes *)
+(import re)
 
-(setv open-brackets "({["
-      close-brackets ")}]")
+(import toolz [identity])
+
+(import nodes *)
 
 ;;; tokenizer for future which aware of lienno and offset
 (defn tokenizer [src]
   (setv lines (.split src "\n")
-        tokens (deque []))
-  (for [[lineno line] (enumerate lines :start 1)]))
-
-(defn pad-brackets [txt]
-  (setv rst txt)
-  (for [c open-brackets]
-    (setv rst (.replace rst c (+ c " "))))
-  (for [c close-brackets]
-    (setv rst (.replace rst c (+ " " c " "))))
-  rst)
-
-(defn simple-tokenizer [src]
-  (deque (.split (pad-brackets src))))
+        tokens (deque [])
+        coord (deque []))
+  (for [[lineno line] (enumerate lines :start 1)]
+    (setv col 0)
+    (for [token (filter identity
+                        (re.split r"( +|\'|\(|\)|\[|\]|\{|\}|f\"|\")" line))]
+      (when (not (token.startswith " "))
+        (tokens.append token)
+        (coord.append [lineno col]))
+      (+= col (len token))))
+  [tokens coord])
 
 (defn onlydigitp [s]
   (all (lfor d s (<= "0" d "9"))))
@@ -31,14 +31,14 @@
        (all (lfor t dot-seperated (onlydigitp t)))))
 
 (defn parse [src]
-  (setv tokens (simple-tokenizer src)
+  (setv tokens (get (tokenizer src) 0)
         stack []
         rst [])
   (for [t tokens]
     (cond (in t ")]}") (do (setv e (stack.pop))
-                        (if stack
-                            (.append (get stack -1) e)
-                            (.append rst e)))
+                           (if stack
+                               (.append (get stack -1) e)
+                               (.append rst e)))
           (= t "(") (stack.append (Paren))
           (= t "[") (stack.append (Bracket))
           (= t "{") (stack.append (Brace))
