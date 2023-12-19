@@ -59,8 +59,7 @@ module Python
           attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
 
           -- BoolOp() can use left & right?
-    expr = BoolOp(boolop op, expr* values)
-         | NamedExpr(expr target, expr value)
+    expr = NamedExpr(expr target, expr value)
          | Lambda(arguments args, expr body)
          | IfExp(expr test, expr body, expr orelse)
          | Dict(expr* keys, expr* values)

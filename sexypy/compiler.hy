@@ -32,7 +32,8 @@
 (defn paren-compiler [expr]
   (cond
     (unaryop-p expr) (unaryop-compile expr)
-    (binop-p expr) (binop-compile expr)))
+    (binop-p expr) (binop-compile expr)
+    (boolop-p expr) (boolop-compile expr)))
 
 (defn bracket-p [expr]
   (isinstance expr Bracket))
@@ -92,3 +93,16 @@
                                :lineno 0
                                :col-offset 0))
           (map expr-compile args)))
+
+(setv boolop-dict {"and" ast.And
+                   "or" ast.Or})
+
+(defn boolop-p [expr]
+  (in expr.op.name boolop-dict))
+
+(defn boolop-compile [expr]
+  (setv [op #* args] expr.list)
+  (ast.BoolOp ((get boolop-dict op.name))
+              (list (map expr-compile args))
+              :lineno 0
+              :col-offset 0))
