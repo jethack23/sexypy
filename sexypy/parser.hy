@@ -27,14 +27,14 @@
                   [r"'(?!\s|$)" "quote"]
                   [r";[^\n]*" "comment"]
                   [(.join "|" (map (fn [x] (+ r"[+-]*" x r"(?=\s|$|\)|\}|\])"))
-                                   (reduce (fn [x y] (+ x [(+ y r"e\-?\d+j") (+ y "j")]))
+                                   (reduce (fn [x y] (+ x [(+ y r"e[\-\+]?\d+j") (+ y "j")]))
                                            [r"\d+\.\d*"
                                             r"\d*\.\d+"
                                             r"\d+"]
                                            [])))
                    "complex"]
                   #* (zip (map (fn [x] (+ r"[+-]*" x r"(?=\s|$|\)|\}|\])"))
-                               (reduce (fn [x y] (+ x [(+ y r"e\-?\d+") y]))
+                               (reduce (fn [x y] (+ x [(+ y r"e[\-\+]?\d+") y]))
                                        [r"\d+\.\d*"
                                         r"\d*\.\d+"
                                         r"\d+"]
