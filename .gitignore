@@ -320,3 +320,4 @@ tags
 # End of https://www.gitignore.io/api/vim,emacs,python,pycharm,visualstudiocode
 
 poetry.lock
+**test.hy
