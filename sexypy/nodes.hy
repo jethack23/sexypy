@@ -59,6 +59,17 @@
   (defn __eq__ [self other]
     (= self.name other)))
 
+(defclass String [Node]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super #** kwargs))
+    (setv self.value value)
+    None)
+
+  (defn __repr__ [self]
+    (+ "Str("
+       (repr self.value)
+       ")")))
+
 (defclass Constant [Node]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super #** kwargs))
@@ -67,5 +78,5 @@
 
   (defn __repr__ [self]
     (+ "Const("
-       (str self.value)
+       (repr self.value)
        ")")))

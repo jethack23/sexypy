@@ -77,6 +77,7 @@
   (cond (and (> (len token) 1) (in (get token 0) "+-")) (unary-op-parse token tktype)
         (= tktype "int") (Constant (int token))
         (= tktype "float") (Constant (float token))
+        (= tktype "string") (string-parse token)
         True (Symbol token)))
 
 (defn unary-op-parse [token tktype]
@@ -89,3 +90,12 @@
   (while stack
     (setv rst (Paren (Symbol (stack.pop)) rst)))
   rst)
+
+(defn string-parse [token]
+  (if (token.startswith "f")
+      (f-string-parse (get token (slice 2 -1)))
+      (String token)))
+
+(defn f-string-parse [token]
+  ;; TODO
+  )

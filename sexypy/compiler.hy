@@ -24,7 +24,7 @@
         (bracket-p expr) (bracket-compiler expr)
         (brace-p expr) (brace-compiler expr)
         (constant-p expr) (constant-compile expr)
-        ))
+        (string-p expr) (string-compile expr)))
 
 (defn paren-p [expr]
   (isinstance expr Paren))
@@ -52,6 +52,18 @@
   (ast.Constant :value constant.value
                 :lineno 0
                 :col-offset 0))
+
+(defn string-p [expr]
+  (isinstance expr String))
+
+(defn string-compile [string]
+  (setv rst (-> (ast.parse string.value)
+                (. body)
+                (get 0)
+                (. value))
+        rst.lineno 0
+        rst.col-offset 0)
+  rst)
 
 (setv unaryop-dict {"+" ast.UAdd
                     "-" ast.USub
