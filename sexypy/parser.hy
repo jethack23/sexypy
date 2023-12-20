@@ -9,6 +9,16 @@
 
 (import nodes *)
 
+(defn number-condition [pattern]
+  (+ r"[+-]*" pattern r"(?=\s|$|\)|\}|\])"))
+
+(setv int-simple r"\d+"
+      float-simples [r"\d+\.\d*" r"\d*\.\d+"]
+      scientific-simples (list (map (fn [x] (+ x r"e[\-\+]?\d+"))
+                                   (+ float-simples [int-simple])))
+      number-simple (.join "|" (+ scientific-simples float-simples [int-simple]))
+      complex-simple fr"(({number-simple})[+-])?({number-simple})j")
+
 ;;; tokenizer for future which aware of lienno and offset
 (defn tokenize [src]
   (setv lines (.split src "\n")
@@ -26,21 +36,10 @@
                    "string"]
                   [r"'(?!\s|$)" "quote"]
                   [r";[^\n]*" "comment"]
-                  [(.join "|" (map (fn [x] (+ r"[+-]*" x r"(?=\s|$|\)|\}|\])"))
-                                   (reduce (fn [x y] (+ x [(+ y r"e[\-\+]?\d+j") (+ y "j")]))
-                                           [r"\d+\.\d*"
-                                            r"\d*\.\d+"
-                                            r"\d+"]
-                                           [])))
-                   "complex"]
-                  #* (zip (map (fn [x] (+ r"[+-]*" x r"(?=\s|$|\)|\}|\])"))
-                               (reduce (fn [x y] (+ x [(+ y r"e[\-\+]?\d+") y]))
-                                       [r"\d+\.\d*"
-                                        r"\d*\.\d+"
-                                        r"\d+"]
-                                       []))
-                          (+ (* ["float"] 5)
-                             ["int"]))
+                  [(number-condition complex-simple) ["complex" "" "" ""]]
+                  [(.join "|" (map number-condition
+                                   (+ scientific-simples float-simples))) "float"]
+                  [(number-condition int-simple) "int"]
                   [r"[^\s]+" "symbol"]
                   [r"\n" "new-line"]
                   [r" +" "spaces"]
@@ -48,9 +47,15 @@
         combined-pattern (.join "|" (lfor [p _] patterns f"({p})"))
         lineno 1
         col-offset 0
+        labels (reduce (fn [x y] (if (isinstance y list)
+                                     (+ x y)
+                                     (+ x [y])))
+                       (get (list (zip #* patterns)) 1)
+                       [])
         re-applied (reduce (fn [x y] (+ x y))
-                           (map (fn [x] (list (filter (fn [y] (get y 0))
-                                                      (zip x (get (list (zip #* patterns)) 1)))))
+                           (map (fn [x] (list (filter (fn [y] (and (get y 0)
+                                                                   (get y 1)))
+                                                      (zip x labels))))
                                 (re.findall combined-pattern src))
                            []))
   (for [[tk tktype] re-applied]
