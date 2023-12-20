@@ -26,6 +26,13 @@
                    "string"]
                   [r"'(?!\s|$)" "quote"]
                   [r";[^\n]*" "comment"]
+                  [(.join "|" (map (fn [x] (+ r"[+-]*" x r"(?=\s|$|\)|\}|\])"))
+                                   (reduce (fn [x y] (+ x [(+ y r"e\-?\d+j") (+ y "j")]))
+                                           [r"\d+\.\d*"
+                                            r"\d*\.\d+"
+                                            r"\d+"]
+                                           [])))
+                   "complex"]
                   #* (zip (map (fn [x] (+ r"[+-]*" x r"(?=\s|$|\)|\}|\])"))
                                (reduce (fn [x y] (+ x [(+ y r"e\-?\d+") y]))
                                        [r"\d+\.\d*"
@@ -77,6 +84,7 @@
   (cond (and (> (len token) 1) (in (get token 0) "+-")) (unary-op-parse token tktype)
         (= tktype "int") (Constant (int token))
         (= tktype "float") (Constant (float token))
+        (= tktype "complex") (Constant (complex token))
         (= tktype "string") (string-parse token)
         True (Symbol token)))
 
