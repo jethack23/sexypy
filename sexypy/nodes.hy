@@ -5,9 +5,9 @@
       (setv (get self.__dict__ k) v))))
 
 (defclass Expression [Node]
-  (defn __init__ [self [tokens None] #** kwargs]
+  (defn __init__ [self #* tokens #** kwargs]
     (.__init__ (super) #** kwargs)
-    (setv self.list (if tokens tokens []))
+    (setv self.list (list tokens))
     None)
 
   (defn append [self t]
