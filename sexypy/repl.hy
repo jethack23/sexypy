@@ -13,5 +13,7 @@
     (for [st stl]
       (eval (compile st "" "single"))))
   (while True
-    (setv st (ast-compile (parse (input "calculate > "))))
+    (setv parsed (parse (input "calculate > ")))
+    (setv st (ast-compile parsed))
+    (print parsed)
     (run-ast st)))
