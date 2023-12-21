@@ -24,7 +24,8 @@
         (bracket-p expr) (bracket-compiler expr)
         (brace-p expr) (brace-compiler expr)
         (constant-p expr) (constant-compile expr)
-        (string-p expr) (string-compile expr)))
+        (string-p expr) (string-compile expr)
+        True (name-compile expr)))
 
 (defn paren-p [expr]
   (isinstance expr Paren))
@@ -33,7 +34,8 @@
   (cond
     (unaryop-p expr) (unaryop-compile expr)
     (binop-p expr) (binop-compile expr)
-    (boolop-p expr) (boolop-compile expr)))
+    (boolop-p expr) (boolop-compile expr)
+    True (call-compile expr)))
 
 (defn bracket-p [expr]
   (isinstance expr Bracket))
@@ -64,6 +66,12 @@
         rst.lineno 0
         rst.col-offset 0)
   rst)
+
+(defn name-compile [symbol [ctx ast.Load]]
+  (ast.Name :id symbol.name
+            :ctx (ctx)
+            :lineno 0
+            :col-offset 0))
 
 (setv unaryop-dict {"+" ast.UAdd
                     "-" ast.USub
@@ -118,3 +126,16 @@
               (list (map expr-compile args))
               :lineno 0
               :col-offset 0))
+
+(defn call-compile [expr]
+  (setv [op #* operands] (list (map expr-compile expr.list))
+        [args keywords] (call-args-parse operands))
+  (ast.Call op
+            args
+            keywords
+            :lineno 0
+            :col-offset 0))
+
+(defn call-args-parse [operands]
+  ;; TODO: parse args so that it can read keyword arguments, *args, **kwargs
+  [operands []])

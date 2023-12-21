@@ -40,7 +40,7 @@
                   [(.join "|" (map number-condition
                                    (+ scientific-simples float-simples))) "float"]
                   [(number-condition int-simple) "int"]
-                  [r"[^\s]+" "symbol"]
+                  [r"[^\s\)\}\]\"]+" "symbol"]
                   [r"\n" "new-line"]
                   [r" +" "spaces"]
                   ]
