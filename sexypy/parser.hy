@@ -65,7 +65,7 @@
           end-col-offset (+ col-shift (if (= num-newline 0)
                                           col-offset
                                           0)))
-    (when (not (in tktype ["new-line" "spaces"]))
+    (when (not (in tktype ["new-line" "spaces" "comment"]))
       (tokens.append [tk tktype
                       {"lineno" lineno
                        "col_offset" col-offset
