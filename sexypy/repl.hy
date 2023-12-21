@@ -2,8 +2,8 @@
 
 (import ast)
 
-(import .parser *)
-(import .compiler *)
+(import sexypy.parser *)
+(import sexypy.compiler *)
 
 (defn ast-to-python [st]
   (str (ast.unparse st)))

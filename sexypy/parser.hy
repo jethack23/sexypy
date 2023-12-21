@@ -7,7 +7,7 @@
 
 (import toolz [identity])
 
-(import .nodes *)
+(import sexypy.nodes *)
 
 (defn number-condition [pattern]
   (+ r"[+-]*" pattern r"(?=\s|$|\)|\}|\])"))
