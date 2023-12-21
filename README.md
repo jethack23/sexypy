@@ -1,3 +1,16 @@
+# Run REPL
+```bash
+hy -m sexypy.repl
+```
+
+# Run Tests
+```bash
+# in project root directory
+python -m unittest
+#or
+hy -m unittest
+```
+
 # AST todo
 ```
 -- ASDL's 4 builtin types are:
