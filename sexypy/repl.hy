@@ -2,18 +2,24 @@
 
 (import ast)
 
-(import parser *)
-(import compiler *)
+(import .parser *)
+(import .compiler *)
+
+(defn ast-to-python [st]
+  (str (ast.unparse st)))
+
+(defn eval-ast [st]
+  (eval (compile st "" "single")))
 
 (when (= __name__ "__main__")
-  (defn run-ast [stl]
+  (defn eval-translate-print [stl]
     (print "\npython translation")
-    (print (.join "\n" (list (map str (map ast.unparse stl)))))
+    (print (.join "\n" (list (map ast-to-python stl))))
     (print "\nresult")
     (for [st stl]
-      (eval (compile st "" "single"))))
+      (eval-ast st)))
   (while True
     (setv parsed (parse (input "calculate > ")))
-    (setv st (ast-compile parsed))
+    (setv stl (ast-compile parsed))
     (print parsed)
-    (run-ast st)))
+    (eval-translate-print stl)))

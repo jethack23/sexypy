@@ -7,7 +7,7 @@
 
 (import toolz [identity])
 
-(import nodes *)
+(import .nodes *)
 
 (defn number-condition [pattern]
   (+ r"[+-]*" pattern r"(?=\s|$|\)|\}|\])"))
@@ -105,8 +105,9 @@
   rst)
 
 (defn string-parse [token]
-  (if (token.startswith "f")
-      (f-string-parse (get token (slice 2 -1)))
+  (setv [prefix content _] (token.split "\""))
+  (if (in "f" prefix)
+      (f-string-parse token)
       (String token)))
 
 (defn f-string-parse [token]

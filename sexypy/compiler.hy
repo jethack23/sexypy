@@ -6,7 +6,7 @@
 
 (import functools [reduce])
 
-(import nodes *)
+(import .nodes *)
 
 (defn ast-compile [expr-list]
   (list (map (fn [e] (ast.Interactive
