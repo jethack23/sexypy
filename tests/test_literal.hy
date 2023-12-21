@@ -2,14 +2,7 @@
 
 (import unittest)
 
-(import sexypy.parser [parse]
-        sexypy.compiler [ast-compile]
-        sexypy.repl [ast-to-python])
-
-(defn src-to-python [src]
-  (.join "\n" (map ast-to-python (-> src
-                                     (parse)
-                                     (ast-compile)))))
+(import .utils [src-to-python])
 
 (defmacro self-retrieval-assert [src]
   `(equal-test ~src ~src))

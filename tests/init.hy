@@ -3,4 +3,5 @@
 
 (import-macro
   test-literal
+  test-expr
   )
