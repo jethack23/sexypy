@@ -59,56 +59,78 @@
                                 (re.findall combined-pattern src))
                            []))
   (for [[tk tktype] re-applied]
-    (when (not (in tktype ["new-line" "spaces"]))
-      (tokens.append [tk tktype [lineno col-offset]]))
     (setv splitted (tk.split "\n")
-          [num-newline col-shift] [(- (len splitted) 1) (len (get splitted -1))])
-    (+= lineno num-newline)
-    (if (= num-newline 0)
-        (+= col-offset col-shift)
-        (setv col-offset col-shift)))
+          [num-newline col-shift] [(- (len splitted) 1) (len (get splitted -1))]
+          end-lineno (+ lineno num-newline)
+          end-col-offset (+ col-shift (if (= num-newline 0)
+                                          col-offset
+                                          0)))
+    (when (not (in tktype ["new-line" "spaces"]))
+      (tokens.append [tk tktype
+                      {"lineno" lineno
+                       "col_offset" col-offset
+                       "end_lineno" end-lineno
+                       "end_col_offset" end-col-offset}]))
+    (setv lineno end-lineno
+          col-offset end-col-offset))
   tokens)
+
+(defn position-info-into-list [position-info]
+  (list (map (fn [x] (get position-info x))
+             ["lineno" "col_offset" "end_lineno" "end_col_offset"])))
 
 (defn parse [src]
   (setv tokens (tokenize src)
         stack []
         rst [])
   (while tokens
-    (setv [t tktype [lineno col-offset]] (tokens.popleft))
-    (cond (in t ")]}") (do (setv e (stack.pop))
+    (setv [t tktype position-info]
+          (tokens.popleft)
+          
+          [lineno col-offset end-lineno end-col-offset]
+          (position-info-into-list position-info))
+    (cond (in t ")]}") (do (setv e (stack.pop)
+                                 e.end-lineno end-lineno
+                                 e.end-col-offset end-col-offset)
                            (if stack
                                (.append (get stack -1) e)
                                (.append rst e)))
-          (= t "(") (stack.append (Paren))
-          (= t "[") (stack.append (Bracket))
-          (= t "{") (stack.append (Brace))
-          True (.append (if stack (get stack -1) rst) (token-parse t tktype))))
+          (= t "(") (stack.append (Paren :lineno lineno :col-offset col-offset))
+          (= t "[") (stack.append (Bracket :lineno lineno :col-offset col-offset))
+          (= t "{") (stack.append (Brace :lineno lineno :col-offset col-offset))
+          True (.append (if stack (get stack -1) rst) (token-parse t tktype position-info))))
   rst)
 
-(defn token-parse [token tktype]
-  (cond (and (> (len token) 1) (in (get token 0) "+-")) (unary-op-parse token tktype)
-        (= tktype "int") (Constant (int token))
-        (= tktype "float") (Constant (float token))
-        (= tktype "complex") (Constant (complex token))
-        (= tktype "string") (string-parse token)
-        True (Symbol token)))
+(defn token-parse [token tktype position-info]
+  (cond (and (> (len token) 1) (in (get token 0) "+-")) (unary-op-parse token tktype position-info)
+        (= tktype "int") (Constant (int token) #** position-info)
+        (= tktype "float") (Constant (float token) #** position-info)
+        (= tktype "complex") (Constant (complex token) #** position-info)
+        (= tktype "string") (string-parse token position-info)
+        True (Symbol token #** position-info)))
 
-(defn unary-op-parse [token tktype]
+(defn unary-op-parse [token tktype position-info]
   (setv stack []
-        idx 0)
+        idx 0
+        lineno (get position-info "lineno")
+        col-offset (get position-info "col_offset"))
   (while (in (get token idx) "+-")
-    (stack.append (get token idx))
+    (stack.append (Symbol (get token idx) #** {"lineno" lineno
+                                               "end_lineno" lineno
+                                               "col_offset" (+ col-offset idx)
+                                               "end_col_offset" (+ col-offset idx 1)}))
     (+= idx 1))
-  (setv rst (token-parse (get token (slice idx None)) tktype))
+  (-= (get position-info "col_offset") idx)
+  (setv rst (token-parse (get token (slice idx None)) tktype position-info))
   (while stack
-    (setv rst (Paren (Symbol (stack.pop)) rst)))
+    (setv rst (Paren (stack.pop) rst)))
   rst)
 
-(defn string-parse [token]
+(defn string-parse [token position-info]
   (setv [prefix content _] (token.split "\""))
   (if (in "f" prefix)
-      (f-string-parse token)
-      (String token)))
+      (f-string-parse token position-info)
+      (String token #** position-info)))
 
 (defn f-string-parse [token]
   ;; TODO

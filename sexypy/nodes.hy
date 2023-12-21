@@ -2,7 +2,13 @@
   (defn __init__ [self #* args #** kwargs]
     (setv self.lineno 0)
     (for [[k v] (kwargs.items)]
-      (setv (get self.__dict__ k) v))))
+      (setv (get self.__dict__ k) v)))
+
+  (defn [property] position-info [self]
+    {"lineno" self.lineno
+     "end_lineno" self.end-lineno
+     "col_offset" self.col-offset
+     "end_col_offset" self.col-offset}))
 
 (defclass Expression [Node]
   (defn __init__ [self #* tokens #** kwargs]
@@ -47,7 +53,7 @@
 
 (defclass Symbol [Node]
   (defn __init__ [self name #** kwargs]
-    (.__init__ (super #** kwargs))
+    (.__init__ (super) #** kwargs)
     (setv self.name name)
     None)
 
@@ -61,7 +67,7 @@
 
 (defclass String [Node]
   (defn __init__ [self value #** kwargs]
-    (.__init__ (super #** kwargs))
+    (.__init__ (super) #** kwargs)
     (setv self.value value)
     None)
 
@@ -72,7 +78,7 @@
 
 (defclass Constant [Node]
   (defn __init__ [self value #** kwargs]
-    (.__init__ (super #** kwargs))
+    (.__init__ (super) #** kwargs)
     (setv self.value value)
     None)
 

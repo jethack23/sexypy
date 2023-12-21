@@ -15,8 +15,7 @@
 
 (defn stmt-compile [expr]
   (ast.Expr :value (expr-compile expr)
-            :lineno 0
-            :col-offset 0))
+            #** expr.position-info))
 
 
 (defn expr-compile [expr]
@@ -52,8 +51,7 @@
 
 (defn constant-compile [constant]
   (ast.Constant :value constant.value
-                :lineno 0
-                :col-offset 0))
+                #** constant.position-info))
 
 (defn string-p [expr]
   (isinstance expr String))
@@ -70,8 +68,7 @@
 (defn name-compile [symbol [ctx ast.Load]]
   (ast.Name :id symbol.name
             :ctx (ctx)
-            :lineno 0
-            :col-offset 0))
+            #** symbol.position-info))
 
 (setv unaryop-dict {"+" ast.UAdd
                     "-" ast.USub
@@ -86,8 +83,7 @@
   (setv [op operand] expr.list)
   (ast.UnaryOp ((get unaryop-dict op.name))
                (expr-compile operand)
-               :lineno 0
-               :col-offset 0))
+               #** expr.position-info))
 
 (setv binop-dict {"+" ast.Add
                   "-" ast.Sub
@@ -110,8 +106,7 @@
 (defn binop-compile [expr]
   (setv [op #* args] expr.list)
   (reduce (fn [x y] (ast.BinOp x ((get binop-dict op.name)) y
-                               :lineno 0
-                               :col-offset 0))
+                               #** expr.position-info))
           (map expr-compile args)))
 
 (setv boolop-dict {"and" ast.And
@@ -124,8 +119,7 @@
   (setv [op #* args] expr.list)
   (ast.BoolOp ((get boolop-dict op.name))
               (list (map expr-compile args))
-              :lineno 0
-              :col-offset 0))
+              #** expr.position-info))
 
 (defn call-compile [expr]
   (setv [op #* operands] (list (map expr-compile expr.list))
@@ -133,8 +127,7 @@
   (ast.Call op
             args
             keywords
-            :lineno 0
-            :col-offset 0))
+            #** expr.position-info))
 
 (defn call-args-parse [operands]
   ;; TODO: parse args so that it can read keyword arguments, *args, **kwargs
