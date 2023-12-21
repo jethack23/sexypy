@@ -1,6 +1,8 @@
 # Run REPL
 ```bash
 hy -m sexypy.repl
+#or
+python -m sexypy.repl
 ```
 
 # Run Tests
