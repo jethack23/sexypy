@@ -1,5 +1,7 @@
 (import ast)
 
+(import functools [reduce])
+
 (import
   sexypy.compiler.literal *
   sexypy.compiler.utils *)

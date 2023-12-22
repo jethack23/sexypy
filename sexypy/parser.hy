@@ -120,10 +120,11 @@
                                                "col_offset" (+ col-offset idx)
                                                "end_col_offset" (+ col-offset idx 1)}))
     (+= idx 1))
-  (-= (get position-info "col_offset") idx)
-  (setv rst (token-parse (get token (slice idx None)) tktype position-info))
+  (+= (get position-info "col_offset") idx)
+  (setv rst (token-parse (get token (slice idx None)) tktype {#** position-info}))
   (while stack
-    (setv rst (Paren (stack.pop) rst)))
+    (-= (get position-info "col_offset") 1)
+    (setv rst (Paren (stack.pop) rst #** position-info)))
   rst)
 
 (defn string-parse [token position-info]
