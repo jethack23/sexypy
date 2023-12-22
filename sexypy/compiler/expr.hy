@@ -1,74 +1,8 @@
-(require hyrule *)
-
 (import ast)
 
-(import collections [deque])
-
-(import functools [reduce])
-
-(import sexypy.nodes *)
-
-(defn ast-compile [expr-list]
-  (list (map (fn [e] (ast.Interactive
-                       :body [(stmt-compile e)]))
-             expr-list)))
-
-(defn stmt-compile [expr]
-  (ast.Expr :value (expr-compile expr)
-            #** expr.position-info))
-
-
-(defn expr-compile [expr]
-  (cond (paren-p expr) (paren-compiler expr)
-        (bracket-p expr) (bracket-compiler expr)
-        (brace-p expr) (brace-compiler expr)
-        (constant-p expr) (constant-compile expr)
-        (string-p expr) (string-compile expr)
-        True (name-compile expr)))
-
-(defn paren-p [expr]
-  (isinstance expr Paren))
-
-(defn paren-compiler [expr]
-  (cond
-    (unaryop-p expr) (unaryop-compile expr)
-    (binop-p expr) (binop-compile expr)
-    (boolop-p expr) (boolop-compile expr)
-    True (call-compile expr)))
-
-(defn bracket-p [expr]
-  (isinstance expr Bracket))
-
-(defn bracket-compiler [expr])
-
-(defn brace-p [expr]
-  (isinstance expr Brace))
-
-(defn brace-compiler [expr])
-
-(defn constant-p [expr]
-  (isinstance expr Constant))
-
-(defn constant-compile [constant]
-  (ast.Constant :value constant.value
-                #** constant.position-info))
-
-(defn string-p [expr]
-  (isinstance expr String))
-
-(defn string-compile [string]
-  (setv rst (-> (ast.parse string.value)
-                (. body)
-                (get 0)
-                (. value))
-        rst.lineno 0
-        rst.col-offset 0)
-  rst)
-
-(defn name-compile [symbol [ctx ast.Load]]
-  (ast.Name :id symbol.name
-            :ctx (ctx)
-            #** symbol.position-info))
+(import
+  sexypy.compiler.literal *
+  sexypy.compiler.utils *)
 
 (setv unaryop-dict {"+" ast.UAdd
                     "-" ast.USub
@@ -132,3 +66,22 @@
 (defn call-args-parse [operands]
   ;; TODO: parse args so that it can read keyword arguments, *args, **kwargs
   [operands []])
+
+(defn paren-compiler [expr]
+  (cond
+    (unaryop-p expr) (unaryop-compile expr)
+    (binop-p expr) (binop-compile expr)
+    (boolop-p expr) (boolop-compile expr)
+    True (call-compile expr)))
+
+(defn bracket-compiler [expr])
+
+(defn brace-compiler [expr])
+
+(defn expr-compile [expr]
+  (cond (paren-p expr) (paren-compiler expr)
+        (bracket-p expr) (bracket-compiler expr)
+        (brace-p expr) (brace-compiler expr)
+        (constant-p expr) (constant-compile expr)
+        (string-p expr) (string-compile expr)
+        True (name-compile expr)))
