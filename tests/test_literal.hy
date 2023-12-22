@@ -37,3 +37,8 @@
   (defn test-raw-string [self]
     (equal-test "r\"\\n\"" "'\\\\n'")
     (equal-test "\"\\n\"" "'\\n'")))
+
+(defclass TestListMethods [unittest.TestCase]
+
+  (defn test-list [self]
+    (self.assertEqual (src-to-python "[1 2]") "[1, 2]")))
