@@ -119,6 +119,12 @@
 (defn bracket-compiler [sexp ctx]
   (list-compile sexp ctx))
 
+(defn set-compile [sexp]
+  (setv [op #* args] sexp.list
+        args (simple-args-parse args))
+  (ast.Set :elts (list (map expr-compile args))
+           #** sexp.position-info))
+
 (defn dict-compile [sexp]
   (setv elts (list (map (fn [x] (if (= x "**")
                                     None
@@ -131,7 +137,9 @@
             #** sexp.position-info))
 
 (defn brace-compiler [sexp]
-  (dict-compile sexp))
+  (if (= sexp.op ",")
+      (set-compile sexp)
+      (dict-compile sexp)))
 
 (defn expr-compile [sexp [ctx ast.Load]]
   (cond (paren-p sexp) (paren-compiler sexp ctx)

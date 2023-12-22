@@ -52,3 +52,14 @@
   (defn test-double-star [self]
     (self.assertEqual (src-to-python "{1 2 ** a ** {3 4}}")
                       "{1: 2, **a, **{3: 4}}")))
+
+
+(defclass TestSetMethods [unittest.TestCase]
+
+  (defn test-set [self]
+    (self.assertEqual (src-to-python "{, 1 2}")
+                      "{1, 2}"))
+
+  (defn test-star [self]
+    (self.assertEqual (src-to-python "{, * [1 2 3] 2 3 4}")
+                      "{*[1, 2, 3], 2, 3, 4}")))
