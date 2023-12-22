@@ -85,7 +85,18 @@
 (defn bracket-compiler [sexp ctx]
   (list-compile sexp ctx))
 
-(defn brace-compiler [sexp])
+(defn dict-compile [sexp]
+  (setv elts (list (map expr-compile
+                        sexp.list))
+        keys (list (map (fn [x] (if (= x "**") None x))
+                        (get elts (slice None None 2))))
+        values (get elts (slice 1 None 2)))
+  (ast.Dict :keys keys
+            :values values
+            #** sexp.position-info))
+
+(defn brace-compiler [sexp]
+  (dict-compile sexp))
 
 (defn expr-compile [sexp [ctx ast.Load]]
   (cond (paren-p sexp) (paren-compiler sexp ctx)

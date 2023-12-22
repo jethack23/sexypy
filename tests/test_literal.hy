@@ -42,3 +42,9 @@
 
   (defn test-list [self]
     (self.assertEqual (src-to-python "[1 2]") "[1, 2]")))
+
+
+(defclass TestDictMethods [unittest.TestCase]
+
+  (defn test-dict [self]
+    (self.assertEqual (src-to-python "{1 2}") "{1: 2}")))
