@@ -77,8 +77,6 @@ module <span class="hljs-type">Python</span>
     <span class="hljs-built_in">expr</span> = <span class="hljs-type">NamedExpr</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> value)
          | <span class="hljs-type">Lambda</span>(arguments args, <span class="hljs-built_in">expr</span> body)
          | <span class="hljs-type">IfExp</span>(<span class="hljs-built_in">expr</span> test, <span class="hljs-built_in">expr</span> body, <span class="hljs-built_in">expr</span> orelse)
-         | <span class="hljs-type">Dict</span>(<span class="hljs-built_in">expr</span>* keys, <span class="hljs-built_in">expr</span>* values)
-         | <span class="hljs-type">Set</span>(<span class="hljs-built_in">expr</span>* elts)
          | <span class="hljs-type">ListComp</span>(<span class="hljs-built_in">expr</span> elt, comprehension* generators)
          | <span class="hljs-type">SetComp</span>(<span class="hljs-built_in">expr</span> elt, comprehension* generators)
          | <span class="hljs-type">DictComp</span>(<span class="hljs-built_in">expr</span> key, <span class="hljs-built_in">expr</span> value, comprehension* generators)
