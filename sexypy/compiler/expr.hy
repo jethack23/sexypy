@@ -105,4 +105,4 @@
         (brace-p sexp) (brace-compiler sexp)
         (constant-p sexp) (constant-compile sexp)
         (string-p sexp) (string-compile sexp)
-        True (name-compile sexp)))
+        True (name-compile sexp ctx)))
