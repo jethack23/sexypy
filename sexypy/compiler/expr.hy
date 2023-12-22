@@ -1,10 +1,23 @@
+(require hyrule *)
+
 (import ast)
 
-(import functools [reduce])
+(import
+  collections [deque]
+  functools [reduce])
 
 (import
   sexypy.compiler.literal *
   sexypy.compiler.utils *)
+
+(defn starred-p [sexp]
+  (= sexp.op.name "star"))
+
+(defn starred-compile [sexp ctx]
+  (setv [op value] sexp.list)
+  (ast.Starred :value (expr-compile value ctx)
+               :ctx (ctx)
+               #** sexp.position-info))
 
 (setv unaryop-dict {"+" ast.UAdd
                     "-" ast.USub
@@ -71,14 +84,35 @@
 
 (defn paren-compiler [sexp ctx]
   (cond
+    (starred-p sexp) (starred-compile sexp ctx)
     (unaryop-p sexp) (unaryop-compile sexp)
     (binop-p sexp) (binop-compile sexp)
     (boolop-p sexp) (boolop-compile sexp)
     True (call-compile sexp)))
 
+(defn simple-args-parse [args]
+  (setv q (deque args)
+        rst [])
+  (while q
+    (setv arg (q.popleft))
+    (-> (if (= arg "*")
+            (do (setv star-value (q.popleft)
+                      position-info {"lineno" arg.lineno
+                                     "col_offset" arg.col-offset
+                                     "end_lineno" star-value.end_lineno
+                                     "end_col_offset" star-value.end_col_offset})
+                (Paren (Symbol "star"
+                               #** arg.position-info)
+                       star-value
+                       #** position-info))
+            arg)
+        (rst.append)))
+  rst)
+
 (defn list-compile [sexp ctx]
+  (setv args (simple-args-parse sexp.list))
   (ast.List :elts (list (map (fn [x] (expr-compile x ctx))
-                             sexp.list))
+                             args))
             :ctx (ctx)
             #** sexp.position-info))
 

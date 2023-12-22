@@ -97,7 +97,6 @@ module <span class="hljs-type">Python</span>
          -- the following expression can appear <span class="hljs-keyword">in</span> assignment context
          | <span class="hljs-type">Attribute</span>(<span class="hljs-built_in">expr</span> value, identifier attr, expr_context ctx)
          | <span class="hljs-type">Subscript</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">expr</span> slice, expr_context ctx)
-         | <span class="hljs-type">Starred</span>(<span class="hljs-built_in">expr</span> value, expr_context ctx)
          | <span class="hljs-type">Name</span>(identifier id, expr_context ctx)
          | <span class="hljs-type">Tuple</span>(<span class="hljs-built_in">expr</span>* elts, expr_context ctx)
 
