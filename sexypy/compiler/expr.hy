@@ -9,15 +9,15 @@
                     "not" ast.Not
                     "~" ast.Invert})
 
-(defn unaryop-p [expr]
-  (and (in expr.op.name unaryop-dict)
-       (= (len expr) 2)))
+(defn unaryop-p [sexp]
+  (and (in sexp.op.name unaryop-dict)
+       (= (len sexp) 2)))
 
-(defn unaryop-compile [expr]
-  (setv [op operand] expr.list)
+(defn unaryop-compile [sexp]
+  (setv [op operand] sexp.list)
   (ast.UnaryOp ((get unaryop-dict op.name))
                (expr-compile operand)
-               #** expr.position-info))
+               #** sexp.position-info))
 
 (setv binop-dict {"+" ast.Add
                   "-" ast.Sub
@@ -33,62 +33,62 @@
                   "&" ast.BitAnd
                   "@" ast.MatMult})
 
-(defn binop-p [expr]
-  (and (in expr.op.name binop-dict)
-       (> (len expr) 2)))
+(defn binop-p [sexp]
+  (and (in sexp.op.name binop-dict)
+       (> (len sexp) 2)))
 
-(defn binop-compile [expr]
-  (setv [op #* args] expr.list)
+(defn binop-compile [sexp]
+  (setv [op #* args] sexp.list)
   (reduce (fn [x y] (ast.BinOp x ((get binop-dict op.name)) y
-                               #** expr.position-info))
+                               #** sexp.position-info))
           (map expr-compile args)))
 
 (setv boolop-dict {"and" ast.And
                    "or" ast.Or})
 
-(defn boolop-p [expr]
-  (in expr.op.name boolop-dict))
+(defn boolop-p [sexp]
+  (in sexp.op.name boolop-dict))
 
-(defn boolop-compile [expr]
-  (setv [op #* args] expr.list)
+(defn boolop-compile [sexp]
+  (setv [op #* args] sexp.list)
   (ast.BoolOp ((get boolop-dict op.name))
               (list (map expr-compile args))
-              #** expr.position-info))
+              #** sexp.position-info))
 
-(defn call-compile [expr]
-  (setv [op #* operands] (list (map expr-compile expr.list))
+(defn call-compile [sexp]
+  (setv [op #* operands] (list (map expr-compile sexp.list))
         [args keywords] (call-args-parse operands))
   (ast.Call op
             args
             keywords
-            #** expr.position-info))
+            #** sexp.position-info))
 
 (defn call-args-parse [operands]
   ;; TODO: parse args so that it can read keyword arguments, *args, **kwargs
   [operands []])
 
-(defn paren-compiler [expr ctx]
+(defn paren-compiler [sexp ctx]
   (cond
-    (unaryop-p expr) (unaryop-compile expr)
-    (binop-p expr) (binop-compile expr)
-    (boolop-p expr) (boolop-compile expr)
-    True (call-compile expr)))
+    (unaryop-p sexp) (unaryop-compile sexp)
+    (binop-p sexp) (binop-compile sexp)
+    (boolop-p sexp) (boolop-compile sexp)
+    True (call-compile sexp)))
 
-(defn list-compile [expr ctx]
+(defn list-compile [sexp ctx]
   (ast.List :elts (list (map (fn [x] (expr-compile x ctx))
-                       expr.list))
+                       sexp.list))
             :ctx (ctx)
-            #** expr.position-info))
+            #** sexp.position-info))
 
-(defn bracket-compiler [expr ctx]
-  (list-compile expr ctx))
+(defn bracket-compiler [sexp ctx]
+  (list-compile sexp ctx))
 
-(defn brace-compiler [expr])
+(defn brace-compiler [sexp])
 
-(defn expr-compile [expr [ctx ast.Load]]
-  (cond (paren-p expr) (paren-compiler expr ctx)
-        (bracket-p expr) (bracket-compiler expr ctx)
-        (brace-p expr) (brace-compiler expr ctx)
-        (constant-p expr) (constant-compile expr)
-        (string-p expr) (string-compile expr)
-        True (name-compile expr)))
+(defn expr-compile [sexp [ctx ast.Load]]
+  (cond (paren-p sexp) (paren-compiler sexp ctx)
+        (bracket-p sexp) (bracket-compiler sexp ctx)
+        (brace-p sexp) (brace-compiler sexp)
+        (constant-p sexp) (constant-compile sexp)
+        (string-p sexp) (string-compile sexp)
+        True (name-compile sexp)))

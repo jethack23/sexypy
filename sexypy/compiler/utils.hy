@@ -1,16 +1,16 @@
 (import sexypy.nodes *)
 
-(defn paren-p [expr]
-  (isinstance expr Paren))
+(defn paren-p [sexp]
+  (isinstance sexp Paren))
 
-(defn bracket-p [expr]
-  (isinstance expr Bracket))
+(defn bracket-p [sexp]
+  (isinstance sexp Bracket))
 
-(defn brace-p [expr]
-  (isinstance expr Brace))
+(defn brace-p [sexp]
+  (isinstance sexp Brace))
 
-(defn constant-p [expr]
-  (isinstance expr Constant))
+(defn constant-p [sexp]
+  (isinstance sexp Constant))
 
-(defn string-p [expr]
-  (isinstance expr String))
+(defn string-p [sexp]
+  (isinstance sexp String))
