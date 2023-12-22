@@ -47,4 +47,8 @@
 (defclass TestDictMethods [unittest.TestCase]
 
   (defn test-dict [self]
-    (self.assertEqual (src-to-python "{1 2}") "{1: 2}")))
+    (self.assertEqual (src-to-python "{1 2}") "{1: 2}"))
+
+  (defn test-double-star [self]
+    (self.assertEqual (src-to-python "{1 2 ** a ** {3 4}}")
+                      "{1: 2, **a, **{3: 4}}")))

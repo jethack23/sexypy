@@ -86,10 +86,11 @@
   (list-compile sexp ctx))
 
 (defn dict-compile [sexp]
-  (setv elts (list (map expr-compile
+  (setv elts (list (map (fn [x] (if (= x "**")
+                                    None
+                                    (expr-compile x)))
                         sexp.list))
-        keys (list (map (fn [x] (if (= x "**") None x))
-                        (get elts (slice None None 2))))
+        keys (get elts (slice None None 2))
         values (get elts (slice 1 None 2)))
   (ast.Dict :keys keys
             :values values
