@@ -18,7 +18,7 @@
   rst)
 
 ;;; Variables in docs
-(defn name-compile [symbol [ctx ast.Load]]
+(defn name-compile [symbol ctx]
   (ast.Name :id symbol.name
             :ctx (ctx)
             #** symbol.position-info))

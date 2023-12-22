@@ -67,21 +67,28 @@
   ;; TODO: parse args so that it can read keyword arguments, *args, **kwargs
   [operands []])
 
-(defn paren-compiler [expr]
+(defn paren-compiler [expr ctx]
   (cond
     (unaryop-p expr) (unaryop-compile expr)
     (binop-p expr) (binop-compile expr)
     (boolop-p expr) (boolop-compile expr)
     True (call-compile expr)))
 
-(defn bracket-compiler [expr])
+(defn list-compile [expr ctx]
+  (ast.List :elts (list (map (fn [x] (expr-compile x ctx))
+                       expr.list))
+            :ctx (ctx)
+            #** expr.position-info))
+
+(defn bracket-compiler [expr ctx]
+  (list-compile expr ctx))
 
 (defn brace-compiler [expr])
 
-(defn expr-compile [expr]
-  (cond (paren-p expr) (paren-compiler expr)
-        (bracket-p expr) (bracket-compiler expr)
-        (brace-p expr) (brace-compiler expr)
+(defn expr-compile [expr [ctx ast.Load]]
+  (cond (paren-p expr) (paren-compiler expr ctx)
+        (bracket-p expr) (bracket-compiler expr ctx)
+        (brace-p expr) (brace-compiler expr ctx)
         (constant-p expr) (constant-compile expr)
         (string-p expr) (string-compile expr)
         True (name-compile expr)))
