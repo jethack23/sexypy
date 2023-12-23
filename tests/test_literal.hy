@@ -44,9 +44,9 @@
     (self.assertEqual (src-to-python "[1 2]") "[1, 2]"))
 
   (defn test-star [self]
-    (self.assertEqual (src-to-python "[* [1 2]]")
+    (self.assertEqual (src-to-python "[*[1 2]]")
                       "[*[1, 2]]")
-    (self.assertEqual (src-to-python "[1 2 * [3 4]]")
+    (self.assertEqual (src-to-python "[1 2 *[3 4]]")
                       "[1, 2, *[3, 4]]")))
 
 (defclass TestTupleMethods [unittest.TestCase]
@@ -55,9 +55,9 @@
     (self.assertEqual (src-to-python "(, 1 2)") "(1, 2)"))
 
   (defn test-star [self]
-    (self.assertEqual (src-to-python "(, * [1 2])")
+    (self.assertEqual (src-to-python "(, *[1 2])")
                       "(*[1, 2],)")
-    (self.assertEqual (src-to-python "(, 1 2 * [3 4])")
+    (self.assertEqual (src-to-python "(, 1 2 *[3 4])")
                       "(1, 2, *[3, 4])")))
 
 
@@ -67,7 +67,7 @@
     (self.assertEqual (src-to-python "{1 2}") "{1: 2}"))
 
   (defn test-double-star [self]
-    (self.assertEqual (src-to-python "{1 2 ** a ** {3 4}}")
+    (self.assertEqual (src-to-python "{1 2 **a **{3 4}}")
                       "{1: 2, **a, **{3: 4}}")))
 
 
@@ -78,5 +78,5 @@
                       "{1, 2}"))
 
   (defn test-star [self]
-    (self.assertEqual (src-to-python "{, * [1 2 3] 2 3 4}")
+    (self.assertEqual (src-to-python "{, *[1 2 3] 2 3 4}")
                       "{*[1, 2, 3], 2, 3, 4}")))

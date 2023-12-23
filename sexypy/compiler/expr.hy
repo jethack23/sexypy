@@ -11,23 +11,7 @@
   sexypy.compiler.utils *)
 
 (defn simple-args-parse [args]
-  (setv q (deque args)
-        rst [])
-  (while q
-    (setv arg (q.popleft))
-    (-> (if (= arg "*")
-            (do (setv star-value (q.popleft)
-                      position-info {"lineno" arg.lineno
-                                     "col_offset" arg.col-offset
-                                     "end_lineno" star-value.end_lineno
-                                     "end_col_offset" star-value.end_col_offset})
-                (Paren (Symbol "star"
-                               #** arg.position-info)
-                       star-value
-                       #** position-info))
-            arg)
-        (rst.append)))
-  rst)
+  args)
 
 (defn tuple-p [sexp]
   (= sexp.op.name ","))
@@ -40,12 +24,8 @@
              :ctx (ctx)
              #** sexp.position-info))
 
-(defn starred-p [sexp]
-  (= sexp.op.name "star"))
-
 (defn starred-compile [sexp ctx]
-  (setv [op value] sexp.list)
-  (ast.Starred :value (expr-compile value ctx)
+  (ast.Starred :value (expr-compile sexp.value ctx)
                :ctx (ctx)
                #** sexp.position-info))
 
@@ -139,7 +119,6 @@
 (defn paren-compiler [sexp ctx]
   (cond
     (tuple-p sexp) (tuple-compile sexp ctx)
-    (starred-p sexp) (starred-compile sexp ctx)
     (unaryop-p sexp) (unaryop-compile sexp)
     (binop-p sexp) (binop-compile sexp)
     (boolop-p sexp) (boolop-compile sexp)
@@ -163,10 +142,11 @@
            #** sexp.position-info))
 
 (defn dict-compile [sexp]
-  (setv elts (list (map (fn [x] (if (= x "**")
-                                    None
-                                    (expr-compile x)))
-                        sexp.list))
+  (setv elts (reduce (fn [x y] (+ x (if (doublestarred-p y)
+                                        [None (expr-compile y.value)]
+                                        [(expr-compile y)])))
+                     sexp
+                     [])
         keys (get elts (slice None None 2))
         values (get elts (slice 1 None 2)))
   (ast.Dict :keys keys
@@ -182,6 +162,7 @@
   (cond (paren-p sexp) (paren-compiler sexp ctx)
         (bracket-p sexp) (bracket-compiler sexp ctx)
         (brace-p sexp) (brace-compiler sexp)
+        (starred-p sexp) (starred-compile sexp ctx)
         (constant-p sexp) (constant-compile sexp)
         (string-p sexp) (string-compile sexp)
         True (name-compile sexp ctx)))

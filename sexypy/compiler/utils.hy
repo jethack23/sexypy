@@ -9,6 +9,12 @@
 (defn brace-p [sexp]
   (isinstance sexp Brace))
 
+(defn starred-p [sexp]
+  (isinstance sexp Starred))
+
+(defn doublestarred-p [sexp]
+  (isinstance sexp DoubleStarred))
+
 (defn constant-p [sexp]
   (isinstance sexp Constant))
 

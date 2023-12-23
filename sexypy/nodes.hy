@@ -4,6 +4,9 @@
     (for [[k v] (kwargs.items)]
       (setv (get self.__dict__ k) v)))
 
+  (defn update-dict [self key value]
+    (setv (get self.__dict__ key) value))  
+
   (defn [property] position-info [self]
     {"lineno" self.lineno
      "end_lineno" self.end-lineno
@@ -50,6 +53,42 @@
 (def-exp-by-type Paren)
 (def-exp-by-type Bracket)
 (def-exp-by-type Brace)
+
+(defclass Starred [Node]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super) #** kwargs)
+    (setv self.value value)
+    None)
+
+  (defn __repr__ [self]
+    (+ "Star("
+       (repr self.value)
+       ")"))
+
+  (defn append [self e]
+    (.append self.value e))
+
+  (defn update-dict [self key value]
+    (setv (get self.__dict__ key) value)
+    (.update-dict self.value key value)))
+
+(defclass DoubleStarred [Node]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super) #** kwargs)
+    (setv self.value value)
+    None)
+
+  (defn __repr__ [self]
+    (+ "DStar("
+       (repr self.value)
+       ")"))
+
+  (defn append [self e]
+    (.append self.value e))
+
+  (defn update-dict [self key value]
+    (setv (get self.__dict__ key) value)
+    (.update-dict self.value key value)))
 
 (defclass Symbol [Node]
   (defn __init__ [self name #** kwargs]
