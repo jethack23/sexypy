@@ -100,6 +100,30 @@
               (list (map expr-compile args))
               #** sexp.position-info))
 
+(setv compare-dict {"==" ast.Eq
+                    "!=" ast.NotEq
+                    "<" ast.Lt
+                    "<=" ast.LtE
+                    ">" ast.Gt
+                    ">=" ast.GtE
+                    "is" ast.Is
+                    "is-not" ast.IsNot
+                    "in" ast.In
+                    "not-in" ast.NotIn})
+
+(defn compare-p [sexp]
+  (in sexp.op.name compare-dict))
+
+(defn compare-compile [sexp]
+  (setv [op #* args] sexp.list
+        [left #* comparators] (map expr-compile
+                                   (simple-args-parse args)))
+  (ast.Compare :left left
+               :ops (lfor i (range (len comparators))
+                          ((get compare-dict op.name)))
+               :comparators comparators
+               #** sexp.position-info))
+
 (defn call-compile [sexp]
   (setv [op #* operands] (list (map expr-compile sexp.list))
         [args keywords] (call-args-parse operands))
@@ -119,6 +143,7 @@
     (unaryop-p sexp) (unaryop-compile sexp)
     (binop-p sexp) (binop-compile sexp)
     (boolop-p sexp) (boolop-compile sexp)
+    (compare-p sexp) (compare-compile sexp)
     True (call-compile sexp)))
 
 (defn list-compile [sexp ctx]
