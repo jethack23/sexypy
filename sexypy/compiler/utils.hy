@@ -20,3 +20,7 @@
 
 (defn string-p [sexp]
   (isinstance sexp String))
+
+(defn keyward-arg-p [sexp]
+  (and (isinstance sexp Symbol)
+       (sexp.name.startswith ":")))

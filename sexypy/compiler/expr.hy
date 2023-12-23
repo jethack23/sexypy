@@ -10,15 +10,11 @@
   sexypy.compiler.literal *
   sexypy.compiler.utils *)
 
-(defn simple-args-parse [args]
-  args)
-
 (defn tuple-p [sexp]
   (= sexp.op.name ","))
 
 (defn tuple-compile [sexp ctx]
-  (setv [op #* args] sexp.list
-        args (simple-args-parse args))
+  (setv [op #* args] sexp.list)
   (ast.Tuple :elts (list (map (fn [x] (expr-compile x ctx))
                               args))
              :ctx (ctx)
@@ -97,24 +93,39 @@
 (defn compare-compile [sexp]
   (setv [op #* args] sexp.list
         [left #* comparators] (map expr-compile
-                                   (simple-args-parse args)))
+                                   args))
   (ast.Compare :left left
                :ops (lfor i (range (len comparators))
                           ((get compare-dict op.name)))
                :comparators comparators
                #** sexp.position-info))
 
-(defn call-compile [sexp]
-  (setv [op #* operands] (list (map expr-compile sexp.list))
-        [args keywords] (call-args-parse operands))
-  (ast.Call op
-            args
-            keywords
-            #** sexp.position-info))
+(defn call-args-parse [given]
+  (setv q (deque given)
+        args []
+        keywords [])
+  (while q
+    (setv arg (q.popleft))
+    (cond  (keyward-arg-p arg)
+           (keywords.append (ast.keyword :arg (get arg.name (slice 1 None))
+                                         :value (expr-compile (q.popleft))
+                                         #** arg.position-info))
+           (doublestarred-p arg)
+           (keywords.append (ast.keyword :value (expr-compile arg.value)
+                                         #** arg.position-info))
 
-(defn call-args-parse [operands]
-  ;; TODO: parse args so that it can read keyword arguments, *args, **kwargs
-  [operands []])
+           True
+           (args.append (expr-compile arg))))
+  [args keywords])
+
+(defn call-compile [sexp]
+  (setv [op #* operands] sexp.list
+        op (expr-compile op)
+        [args keywords] (call-args-parse operands))
+  (ast.Call :func op
+            :args args
+            :keywords keywords
+            #** sexp.position-info))
 
 (defn paren-compiler [sexp ctx]
   (cond
@@ -126,7 +137,7 @@
     True (call-compile sexp)))
 
 (defn list-compile [sexp ctx]
-  (setv args (simple-args-parse sexp.list))
+  (setv args sexp.list)
   (ast.List :elts (list (map (fn [x] (expr-compile x ctx))
                              args))
             :ctx (ctx)
@@ -136,8 +147,7 @@
   (list-compile sexp ctx))
 
 (defn set-compile [sexp]
-  (setv [op #* args] sexp.list
-        args (simple-args-parse args))
+  (setv [op #* args] sexp.list)
   (ast.Set :elts (list (map expr-compile args))
            #** sexp.position-info))
 

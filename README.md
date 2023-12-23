@@ -92,7 +92,6 @@ module <span class="hljs-type">Python</span>
          | <span class="hljs-type">YieldFrom</span>(<span class="hljs-built_in">expr</span> value)
          -- need sequences <span class="hljs-keyword">for</span> compare to distinguish between
          -- x &lt; <span class="hljs-number">4</span> &lt; <span class="hljs-number">3</span> <span class="hljs-keyword">and</span> (x &lt; <span class="hljs-number">4</span>) &lt; <span class="hljs-number">3</span>
-         | <span class="hljs-type">Call</span>(<span class="hljs-built_in">expr</span> func, <span class="hljs-built_in">expr</span>* args, keyword* keywords)
          | <span class="hljs-type">FormattedValue</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">int</span> conversion, <span class="hljs-built_in">expr</span>? format_spec)
          | <span class="hljs-type">JoinedStr</span>(<span class="hljs-built_in">expr</span>* values)
 
