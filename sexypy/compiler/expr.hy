@@ -10,6 +10,36 @@
   sexypy.compiler.literal *
   sexypy.compiler.utils *)
 
+(defn simple-args-parse [args]
+  (setv q (deque args)
+        rst [])
+  (while q
+    (setv arg (q.popleft))
+    (-> (if (= arg "*")
+            (do (setv star-value (q.popleft)
+                      position-info {"lineno" arg.lineno
+                                     "col_offset" arg.col-offset
+                                     "end_lineno" star-value.end_lineno
+                                     "end_col_offset" star-value.end_col_offset})
+                (Paren (Symbol "star"
+                               #** arg.position-info)
+                       star-value
+                       #** position-info))
+            arg)
+        (rst.append)))
+  rst)
+
+(defn tuple-p [sexp]
+  (= sexp.op.name ","))
+
+(defn tuple-compile [sexp ctx]
+  (setv [op #* args] sexp.list
+        args (simple-args-parse args))
+  (ast.Tuple :elts (list (map (fn [x] (expr-compile x ctx))
+                              args))
+             :ctx (ctx)
+             #** sexp.position-info))
+
 (defn starred-p [sexp]
   (= sexp.op.name "star"))
 
@@ -84,30 +114,12 @@
 
 (defn paren-compiler [sexp ctx]
   (cond
+    (tuple-p sexp) (tuple-compile sexp ctx)
     (starred-p sexp) (starred-compile sexp ctx)
     (unaryop-p sexp) (unaryop-compile sexp)
     (binop-p sexp) (binop-compile sexp)
     (boolop-p sexp) (boolop-compile sexp)
     True (call-compile sexp)))
-
-(defn simple-args-parse [args]
-  (setv q (deque args)
-        rst [])
-  (while q
-    (setv arg (q.popleft))
-    (-> (if (= arg "*")
-            (do (setv star-value (q.popleft)
-                      position-info {"lineno" arg.lineno
-                                     "col_offset" arg.col-offset
-                                     "end_lineno" star-value.end_lineno
-                                     "end_col_offset" star-value.end_col_offset})
-                (Paren (Symbol "star"
-                               #** arg.position-info)
-                       star-value
-                       #** position-info))
-            arg)
-        (rst.append)))
-  rst)
 
 (defn list-compile [sexp ctx]
   (setv args (simple-args-parse sexp.list))

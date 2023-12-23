@@ -101,7 +101,6 @@ module <span class="hljs-type">Python</span>
          | <span class="hljs-type">Attribute</span>(<span class="hljs-built_in">expr</span> value, identifier attr, expr_context ctx)
          | <span class="hljs-type">Subscript</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">expr</span> slice, expr_context ctx)
          | <span class="hljs-type">Name</span>(identifier id, expr_context ctx)
-         | <span class="hljs-type">Tuple</span>(<span class="hljs-built_in">expr</span>* elts, expr_context ctx)
 
          -- can appear only <span class="hljs-keyword">in</span> <span class="hljs-type">Subscript</span>
          | <span class="hljs-type">Slice</span>(<span class="hljs-built_in">expr</span>? lower, <span class="hljs-built_in">expr</span>? upper, <span class="hljs-built_in">expr</span>? step)
