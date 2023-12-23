@@ -19,6 +19,6 @@
 
 ;;; Variables in docs
 (defn name-compile [symbol ctx]
-  (ast.Name :id symbol.name
+  (ast.Name :id (symbol.name.replace "-" "_")
             :ctx (ctx)
             #** symbol.position-info))
