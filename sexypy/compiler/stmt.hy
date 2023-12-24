@@ -26,6 +26,12 @@
               :value (expr-compile value)
               #** sexp.position-info))
 
+(defn pass-p [sexp]
+  (= sexp.op.name "pass"))
+
+(defn pass-compile [sexp]
+  (ast.Pass #** sexp.position-info))
+
 (defn if-p [sexp]
   (= sexp.op.name "if"))
 
@@ -127,14 +133,45 @@
   (ast.Return :value (expr-compile value)
               #** sexp.position-info))
 
+(defn classdef-p [sexp]
+  (= sexp.op.name "class"))
+
+(defn classdef-args-parse [args]
+  (setv q (deque args)
+        bases []
+        keywords [])
+  (while q
+    (setv arg (q.popleft))
+    (if (keyward-arg-p arg)
+        (keywords.append (ast.keyword :arg (get arg.name (slice 1 None))
+                                      :value (expr-compile (q.popleft))
+                                      #** arg.position-info))
+        (bases.append (expr-compile arg))))
+  [bases keywords])
+
+(defn classdef-compile [sexp decorator-list]
+  (setv [_ clsname args #*body] sexp.list
+        [bases keywords] (classdef-args-parse args))
+  (ast.ClassDef
+    :name clsname.name
+    :bases bases
+    :keywords keywords
+    :body (stmt-list-compile body)
+    :decorator-list (if decorator-list
+                        (list (map expr-compile decorator-list))
+                        [])
+    #** sexp.position-info))
+
 (defn stmt-compile [sexp [decorator-list None]]
   (cond (not (paren-p sexp)) (expr-wrapper sexp)
         (do-p sexp) (do-compile sexp)
         (assign-p sexp) (assign-compile sexp)
+        (pass-p sexp) (pass-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
+        (classdef-p sexp) (classdef-compile sexp decorator-list)
         ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
         True (expr-wrapper sexp)))
 

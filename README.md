@@ -34,12 +34,6 @@ module <span class="hljs-type">Python</span>
                              <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
                              <span class="hljs-built_in">string</span>? type_comment)
 
-          | <span class="hljs-type">ClassDef</span>(identifier name,
-             <span class="hljs-built_in">expr</span>* bases,
-             keyword* keywords,
-             <span class="hljs-built_in">stmt</span>* body,
-             <span class="hljs-built_in">expr</span>* decorator_list)
-
           | <span class="hljs-type">Delete</span>(<span class="hljs-built_in">expr</span>* targets)
           | <span class="hljs-type">AugAssign</span>(<span class="hljs-built_in">expr</span> target, operator op, <span class="hljs-built_in">expr</span> value)
           -- 'simple' indicates that we annotate simple name <span class="hljs-keyword">without</span> parens
