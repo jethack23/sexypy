@@ -32,21 +32,19 @@ module <span class="hljs-type">Python</span>
 
     <span class="hljs-built_in">stmt</span> = <span class="hljs-type">FunctionDef</span>(identifier name, arguments args,
                        <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
-                       <span class="hljs-built_in">string</span>? type_comment, type_param* type_params)
+                       <span class="hljs-built_in">string</span>? type_comment)
           | <span class="hljs-type">AsyncFunctionDef</span>(identifier name, arguments args,
                              <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
-                             <span class="hljs-built_in">string</span>? type_comment, type_param* type_params)
+                             <span class="hljs-built_in">string</span>? type_comment)
 
           | <span class="hljs-type">ClassDef</span>(identifier name,
              <span class="hljs-built_in">expr</span>* bases,
              keyword* keywords,
              <span class="hljs-built_in">stmt</span>* body,
-             <span class="hljs-built_in">expr</span>* decorator_list,
-             type_param* type_params)
+             <span class="hljs-built_in">expr</span>* decorator_list)
           | <span class="hljs-type">Return</span>(<span class="hljs-built_in">expr</span>? value)
 
           | <span class="hljs-type">Delete</span>(<span class="hljs-built_in">expr</span>* targets)
-          | <span class="hljs-type">TypeAlias</span>(<span class="hljs-built_in">expr</span> name, type_param* type_params, <span class="hljs-built_in">expr</span> value)
           | <span class="hljs-type">AugAssign</span>(<span class="hljs-built_in">expr</span> target, operator op, <span class="hljs-built_in">expr</span> value)
           -- 'simple' indicates that we annotate simple name <span class="hljs-keyword">without</span> parens
           | <span class="hljs-type">AnnAssign</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> annotation, <span class="hljs-built_in">expr</span>? value, <span class="hljs-built_in">int</span> simple)
@@ -136,10 +134,6 @@ module <span class="hljs-type">Python</span>
 
     type_ignore = <span class="hljs-type">TypeIgnore</span>(<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">string</span> tag)
 
-    type_param = <span class="hljs-type">TypeVar</span>(identifier name, <span class="hljs-built_in">expr</span>? bound)
-               | <span class="hljs-type">ParamSpec</span>(identifier name)
-               | <span class="hljs-type">TypeVarTuple</span>(identifier name)
-               attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span> end_lineno, <span class="hljs-built_in">int</span> end_col_offset)
 }</pre>
 
 Implemented Components are removed
