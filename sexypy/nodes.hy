@@ -11,7 +11,10 @@
     {"lineno" self.lineno
      "end_lineno" self.end-lineno
      "col_offset" self.col-offset
-     "end_col_offset" self.col-offset}))
+     "end_col_offset" self.col-offset})
+
+  (defn __eq__ [self other]
+    (= (str self) other)))
 
 (defclass Expression [Node]
   (defn __init__ [self #* tokens #** kwargs]
@@ -42,13 +45,26 @@
   (defn [property] operands [self]
     (get self.list (slice 1 None))))
 
+(setv openings {"Paren" "("
+                "Bracket" "["
+                "Brace" "{"}
+      closings {"Paren" ")"
+                "Bracket" "]"
+                "Brace" "}"})
+
 (defmacro def-exp-by-type [type]
   `(defclass ~type [Expression]
+
      (defn __repr__ [self [depth 0]]
        (+ ~(str type)
           "("
           (.join ", " (lfor e self.list (repr e)))
-          ")"))))
+          ")"))
+
+     (defn __str__ [self]
+       (+ (get openings ~(str type))
+          (.join " " (lfor e self.list (str e)))
+          (get closings ~(str type))))))
 
 (def-exp-by-type Paren)
 (def-exp-by-type Bracket)
@@ -64,6 +80,10 @@
     (+ "Star("
        (repr self.value)
        ")"))
+
+  (defn __str__ [self]
+    (+ "*"
+       (str self.value)))
 
   (defn append [self e]
     (.append self.value e))
@@ -83,6 +103,10 @@
        (repr self.value)
        ")"))
 
+  (defn __str__ [self]
+    (+ "**"
+       (str self.value)))
+
   (defn append [self e]
     (.append self.value e))
 
@@ -101,8 +125,8 @@
        self.name
        ")"))
 
-  (defn __eq__ [self other]
-    (= self.name other)))
+  (defn __str__ [self]
+    self.name))
 
 (defclass String [Node]
   (defn __init__ [self value #** kwargs]
@@ -113,7 +137,10 @@
   (defn __repr__ [self]
     (+ "Str("
        (repr self.value)
-       ")")))
+       ")"))
+
+  (defn __str__ [self]
+    self.value))
 
 (defclass Constant [Node]
   (defn __init__ [self value #** kwargs]
@@ -124,4 +151,7 @@
   (defn __repr__ [self]
     (+ "Const("
        (repr self.value)
-       ")")))
+       ")"))
+
+  (defn __str__ [self]
+    (str self.value)))
