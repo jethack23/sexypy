@@ -46,7 +46,6 @@ module <span class="hljs-type">Python</span>
           | <span class="hljs-type">Return</span>(<span class="hljs-built_in">expr</span>? value)
 
           | <span class="hljs-type">Delete</span>(<span class="hljs-built_in">expr</span>* targets)
-          | <span class="hljs-type">Assign</span>(<span class="hljs-built_in">expr</span>* targets, <span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">string</span>? type_comment)
           | <span class="hljs-type">TypeAlias</span>(<span class="hljs-built_in">expr</span> name, type_param* type_params, <span class="hljs-built_in">expr</span> value)
           | <span class="hljs-type">AugAssign</span>(<span class="hljs-built_in">expr</span> target, operator op, <span class="hljs-built_in">expr</span> value)
           -- 'simple' indicates that we annotate simple name <span class="hljs-keyword">without</span> parens
