@@ -1,6 +1,7 @@
 (import ast)
 
 (import collections [deque])
+(import functools [reduce])
 
 (import sexypy.compiler.expr [expr-compile]
         sexypy.compiler.utils *)
@@ -8,6 +9,13 @@
 (defn expr-wrapper [sexp]
   (ast.Expr :value (expr-compile sexp)
             #** sexp.position-info))
+
+(defn do-p [sexp]
+  (= sexp.op.name "do"))
+
+(defn do-compile [sexp]
+  (setv [op #* sexps] sexp.list)
+  (stmt-list-compile sexps))
 
 (defn assign-p [sexp]
   (= sexp.op.name "="))
@@ -17,6 +25,19 @@
   (ast.Assign :targets (list (map (fn [x] (expr-compile x :ctx ast.Store)) targets))
               :value (expr-compile value)
               #** sexp.position-info))
+
+(defn if-p [sexp]
+  (= sexp.op.name "if"))
+
+(defn if-stmt-compile [sexp]
+  (setv [_ test then orelse]
+        (if (< (len sexp.list) 4)
+            [#* sexp.list None]
+            sexp.list)) 
+  (ast.If :test (expr-compile test)
+          :body (stmt-list-compile [then])
+          :orelse (if orelse (stmt-list-compile [orelse]) [])
+          #** sexp.position-info))
 
 (defn deco-p [sexp]
   (= sexp.op.name "deco"))
@@ -91,7 +112,7 @@
   (ast.FunctionDef
     :name fnname.name
     :args (def-args-parse args)
-    :body (list (map stmt-compile body))
+    :body (stmt-list-compile body)
     :decorator-list (if decorator-list
                         (list (map expr-compile decorator-list))
                         [])
@@ -108,10 +129,18 @@
 
 (defn stmt-compile [sexp [decorator-list None]]
   (cond (not (paren-p sexp)) (expr-wrapper sexp)
+        (do-p sexp) (do-compile sexp)
         (assign-p sexp) (assign-compile sexp)
+        (if-p sexp) (if-stmt-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
         ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
         True (expr-wrapper sexp)))
 
+(defn stmt-list-compile [sexp-list]
+  (reduce (fn [x y] (+ x (if (isinstance y list)
+                             y
+                             [y])))
+          (map stmt-compile sexp-list)
+          []))

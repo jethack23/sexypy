@@ -15,9 +15,9 @@
     (print "\nresult"))
   (while True
     (setv parsed (parse (input "calculate > ")))
-    (setv stl (ast-compile parsed))
+    (setv stl (stmt-list-compile parsed))
     (print parsed)
     (eval-translate-print stl)
     (for [st stl]
-      (eval (compile st "" "single")))
+      (eval (compile (ast.Interactive :body [st]) "" "single")))
     ))

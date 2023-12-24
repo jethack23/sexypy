@@ -2,7 +2,7 @@
 
 (import unittest)
 
-(import .utils [parse ast-compile src-to-python])
+(import .utils [parse src-to-python])
 
 (defclass TestUnaryOpMethods [unittest.TestCase]
 
