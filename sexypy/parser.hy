@@ -25,11 +25,11 @@
         tokens (deque [])
         patterns [[r"\*{0,2}[\(\{\[]" "opening"]
                   [r"[\)\}\]]" "closing"]
-                  [(.join "|" (map (fn [x] (+ r"\w*" x))
-                                   [r"\'\'\'(?:[^\\']|\\.)*\'\'\'"
-                                    r"\"\"\"(?:[^\\\"]|\\.)*\"\"\""
-                                    r"\"(?:[^\\\"]|\\.)*\""]))
-                   "string"]
+                  #* (list (zip (map (fn [x] (+ r"\w*" x))
+                                     [r"\'\'\'(?:[^\\']|\\.)*\'\'\'"
+                                      r"\"\"\"(?:[^\\\"]|\\.)*\"\"\""
+                                      r"\"(?:[^\\\"]|\\.)*\""])
+                                ["'''" "\"\"\"" "\""]))
                   [r"'(?!\s|$)" "quote"]
                   [r";[^\n]*" "comment"]
                   [(number-condition complex-simple) ["complex" "" "" ""]]
@@ -112,7 +112,7 @@
         (= tktype "int") (Constant (int token) #** position-info)
         (= tktype "float") (Constant (float token) #** position-info)
         (= tktype "complex") (Constant (complex token) #** position-info)
-        (= tktype "string") (string-parse token position-info)
+        (in tktype ["'''" "\"\"\"" "\""]) (string-parse token tktype position-info)
         True (Symbol token #** position-info)))
 
 (defn star-token-parse [token tktype position-info]
@@ -142,8 +142,8 @@
     (setv rst (Paren (stack.pop) rst #** position-info)))
   rst)
 
-(defn string-parse [token position-info]
-  (setv [prefix content _] (token.split "\""))
+(defn string-parse [token tktype position-info]
+  (setv [prefix content _] (token.split tktype))
   (if (in "f" prefix)
       (f-string-parse token position-info)
       (String token #** position-info)))
