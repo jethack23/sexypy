@@ -30,10 +30,7 @@ module <span class="hljs-type">Python</span>
         | <span class="hljs-type">Expression</span>(<span class="hljs-built_in">expr</span> body)
         | <span class="hljs-type">FunctionType</span>(<span class="hljs-built_in">expr</span>* argtypes, <span class="hljs-built_in">expr</span> returns)
 
-    <span class="hljs-built_in">stmt</span> = <span class="hljs-type">FunctionDef</span>(identifier name, arguments args,
-                       <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
-                       <span class="hljs-built_in">string</span>? type_comment)
-          | <span class="hljs-type">AsyncFunctionDef</span>(identifier name, arguments args,
+    <span class="hljs-built_in">stmt</span> = <span class="hljs-type">AsyncFunctionDef</span>(identifier name, arguments args,
                              <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
                              <span class="hljs-built_in">string</span>? type_comment)
 
@@ -42,7 +39,6 @@ module <span class="hljs-type">Python</span>
              keyword* keywords,
              <span class="hljs-built_in">stmt</span>* body,
              <span class="hljs-built_in">expr</span>* decorator_list)
-          | <span class="hljs-type">Return</span>(<span class="hljs-built_in">expr</span>? value)
 
           | <span class="hljs-type">Delete</span>(<span class="hljs-built_in">expr</span>* targets)
           | <span class="hljs-type">AugAssign</span>(<span class="hljs-built_in">expr</span> target, operator op, <span class="hljs-built_in">expr</span> value)
@@ -105,9 +101,6 @@ module <span class="hljs-type">Python</span>
 
     excepthandler = <span class="hljs-type">ExceptHandler</span>(<span class="hljs-built_in">expr</span>? <span class="hljs-keyword">type</span>, identifier? name, <span class="hljs-built_in">stmt</span>* body)
                     attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
-
-    arguments = (arg* posonlyargs, arg* args, arg? vararg, arg* kwonlyargs,
-                 <span class="hljs-built_in">expr</span>* kw_defaults, arg? kwarg, <span class="hljs-built_in">expr</span>* defaults)
 
 
     -- <span class="hljs-keyword">import</span> name <span class="hljs-keyword">with</span> optional '<span class="hljs-keyword">as</span>' alias.
