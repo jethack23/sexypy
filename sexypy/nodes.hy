@@ -157,4 +157,4 @@
        ")"))
 
   (defn __str__ [self]
-    (str self.value)))
+    (.replace (str self.value) "\'" "")))

@@ -106,13 +106,24 @@
           True (.append (if stack (get stack -1) rst) (token-parse t tktype position-info))))
   rst)
 
+(setv special-literals #("True" "False" "None" "..."))
+
 (defn token-parse [token tktype position-info]
-  (cond (and (> (len token) 1) (= (get token 0) "*")) (star-token-parse token tktype position-info)
-        (and (> (len token) 1) (in (get token 0) "+-")) (unary-op-parse token tktype position-info)
-        (= tktype "int") (Constant (int token) #** position-info)
-        (= tktype "float") (Constant (float token) #** position-info)
-        (= tktype "complex") (Constant (complex token) #** position-info)
-        (in tktype ["'''" "\"\"\"" "\""]) (string-parse token tktype position-info)
+  (cond (and (> (len token) 1) (= (get token 0) "*"))
+        (star-token-parse token tktype position-info)
+        
+        (and (> (len token) 1) (in (get token 0) "+-"))
+        (unary-op-parse token tktype position-info)
+        
+        (or  (= tktype "int")
+             (= tktype "float")
+             (= tktype "complex")
+             (in token special-literals))
+        (Constant token #** position-info)
+        
+        (in tktype ["'''" "\"\"\"" "\""])
+        (string-parse token tktype position-info)
+        
         True (Symbol token #** position-info)))
 
 (defn star-token-parse [token tktype position-info]
@@ -143,7 +154,7 @@
   rst)
 
 (defn string-parse [token tktype position-info]
-  (setv [prefix content _] (token.split tktype))
+  (setv [prefix #* content _] (token.split tktype))
   (if (in "f" prefix)
       (f-string-parse token position-info)
       (String token #** position-info)))

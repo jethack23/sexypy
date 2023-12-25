@@ -3,19 +3,12 @@
 (import ast)
 
 (defn constant-compile [constant]
-  (ast.Constant :value constant.value
+  (ast.Constant :value (eval constant.value)
                 #** constant.position-info))
 
 (defn string-compile [string]
-  (setv rst (-> (ast.parse string.value)
-                (. body)
-                (get 0)
-                (. value))
-        rst.lineno string.lineno
-        rst.col-offset string.col-offset
-        rst.end-lineno string.end-lineno
-        rst.end-col-offset string.end-col-offset)
-  rst)
+  (ast.Constant :value (eval string.value)
+                #** string.position-info))
 
 ;;; Variables in docs
 (defn name-compile [symbol ctx]
