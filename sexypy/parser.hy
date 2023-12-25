@@ -9,48 +9,37 @@
 
 (import sexypy.nodes *)
 
-(defn number-condition [pattern]
-  (+ r"[+-]*" pattern r"(?=\s|$|\)|\}|\])"))
-
-(setv int-simple r"\d+"
-      float-simples [r"\d+\.\d*" r"\d*\.\d+"]
-      scientific-simples (list (map (fn [x] (+ x r"e[\-\+]?\d+"))
-                                    (+ float-simples [int-simple])))
-      number-simple (.join "|" (+ scientific-simples float-simples [int-simple]))
-      complex-simple fr"(({number-simple})[+-])?({number-simple})j")
-
 ;;; tokenizer for future which aware of lienno and offset
 (defn tokenize [src]
   (setv lines (.split src "\n")
         tokens (deque [])
-        patterns [[r"\*{0,2}[\(\{\[]" "opening"]
-                  [r"[\)\}\]]" "closing"]
-                  #* (list (zip (map (fn [x] (+ r"\w*" x))
-                                     [r"\'\'\'(?:[^\\']|\\.)*\'\'\'"
-                                      r"\"\"\"(?:[^\\\"]|\\.)*\"\"\""
-                                      r"\"(?:[^\\\"]|\\.)*\""])
-                                ["'''" "\"\"\"" "\""]))
-                  [r"'(?!\s|$)" "quote"]
-                  [r";[^\n]*" "comment"]
-                  [(number-condition complex-simple) ["complex" "" "" ""]]
-                  [(.join "|" (map number-condition
-                                   (+ scientific-simples float-simples))) "float"]
-                  [(number-condition int-simple) "int"]
-                  [r"[^\s\)\}\]\"]+" "symbol"]
-                  [r"\n" "new-line"]
-                  [r" +" "spaces"]
-                  ]
-        combined-pattern (.join "|" (lfor [p _] patterns f"({p})"))
+        int-simple r"\d+"
+        float-simples [r"\d+\.\d*" r"\d*\.\d+"]
+        scientific-simples (list (map (fn [x] (+ x r"e[\-\+]?\d+"))
+                                      (+ float-simples [int-simple])))
+        number-simple (.join "|" (+ scientific-simples float-simples [int-simple]))
+        complex-simple fr"(?:(?:{number-simple})[+-])?(?:{number-simple})j"
+        pattern-labels [[r"\*{0,2}[\(\{\[]" "opening"]
+                        [r"[\)\}\]]" "closing"]
+                        #* (list (zip (map (fn [x] (+ r"\w*" x))
+                                           [r"\'\'\'(?:[^\\']|\\.)*\'\'\'"
+                                            r"\"\"\"(?:[^\\\"]|\\.)*\"\"\""
+                                            r"\"(?:[^\\\"]|\\.)*\""])
+                                      ["'''" "\"\"\"" "\""]))
+                        [r"'(?!\s|$)" "quote"]
+                        [r";[^\n]*" "comment"]
+                        [(+ r"[+-]*(?:" (.join "|" [complex-simple number-simple]) r")(?=\s|$|\)|\}|\])")
+                         "number"]
+                        [r"[^\s\)\}\]\"]+" "symbol"]
+                        [r"\n" "new-line"]
+                        [r" +" "spaces"]
+                        ]
+        [patterns labels] (zip #* pattern-labels)
+        combined-pattern (.join "|" (map (fn [p] f"({p})") patterns))
         lineno 1
         col-offset 0
-        labels (reduce (fn [x y] (if (isinstance y list)
-                                     (+ x y)
-                                     (+ x [y])))
-                       (get (list (zip #* patterns)) 1)
-                       [])
         re-applied (reduce (fn [x y] (+ x y))
-                           (map (fn [x] (list (filter (fn [y] (and (get y 0)
-                                                                   (get y 1)))
+                           (map (fn [x] (list (filter (fn [y] (get y 0))
                                                       (zip x labels))))
                                 (re.findall combined-pattern src))
                            []))
@@ -115,9 +104,7 @@
         (and (> (len token) 1) (in (get token 0) "+-"))
         (unary-op-parse token tktype position-info)
         
-        (or  (= tktype "int")
-             (= tktype "float")
-             (= tktype "complex")
+        (or  (= tktype "number")
              (in token special-literals))
         (Constant token #** position-info)
         
