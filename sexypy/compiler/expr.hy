@@ -169,6 +169,16 @@
             :keywords keywords
             #** sexp.position-info))
 
+(defn namedexpr-p [sexp]
+  (= (str sexp.op) ":="))
+
+(defn namedexpr-compile [sexp]
+  (setv [_ target value] sexp.list)
+  (ast.NamedExpr :target (expr-compile target
+                                       :ctx ast.Store)
+                 :value (expr-compile value)
+                 #** sexp.position-info))
+
 (defn subscript-p [sexp]
   (= (str sexp.op) "sub"))
 
@@ -222,6 +232,7 @@
     (ifexp-p sexp) (ifexp-compile sexp)
     (attribute-p sexp) (attribute-compile sexp ctx)
     (methodcall-p sexp) (methodcall-compile sexp)
+    (namedexpr-p sexp) (namedexpr-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
     (slice-p sexp) (slice-compile sexp)
     (lambda-p sexp) (lambda-compile sexp)
