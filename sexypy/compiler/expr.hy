@@ -207,7 +207,7 @@
   (when args
     (setv step (args.popleft))
     (when (!= step "None")
-      (setv (get args-dict "lower") (expr-compile step))))
+      (setv (get args-dict "step") (expr-compile step))))
   
   (ast.Slice #** args-dict
              #** sexp.position-info))
@@ -234,7 +234,6 @@
     (methodcall-p sexp) (methodcall-compile sexp)
     (namedexpr-p sexp) (namedexpr-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
-    (slice-p sexp) (slice-compile sexp)
     (lambda-p sexp) (lambda-compile sexp)
     True (call-compile sexp)))
 
@@ -246,7 +245,8 @@
             #** sexp.position-info))
 
 (defn bracket-compiler [sexp ctx]
-  (list-compile sexp ctx))
+  (cond (slice-p sexp) (slice-compile sexp)
+        True (list-compile sexp ctx)))
 
 (defn set-compile [sexp]
   (setv [op #* args] sexp.list)
