@@ -127,6 +127,16 @@
             :keywords keywords
             #** sexp.position-info))
 
+(defn ifexp-p [sexp]
+  (= sexp.op.name "ifexp"))
+
+(defn ifexp-compile [sexp]
+  (setv [_ test body orelse] sexp.list)
+  (ast.IfExp :test (expr-compile test)
+             :body (expr-compile body)
+             :orelse (expr-compile orelse)
+             #** sexp.position-info))
+
 (defn paren-compiler [sexp ctx]
   (cond
     (tuple-p sexp) (tuple-compile sexp ctx)
@@ -134,6 +144,7 @@
     (binop-p sexp) (binop-compile sexp)
     (boolop-p sexp) (boolop-compile sexp)
     (compare-p sexp) (compare-compile sexp)
+    (ifexp-p sexp) (ifexp-compile sexp)
     True (call-compile sexp)))
 
 (defn list-compile [sexp ctx]
