@@ -79,10 +79,6 @@ module <span class="hljs-type">Python</span>
 
          -- the following expression can appear <span class="hljs-keyword">in</span> assignment context
          | <span class="hljs-type">Attribute</span>(<span class="hljs-built_in">expr</span> value, identifier attr, expr_context ctx)
-         | <span class="hljs-type">Subscript</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">expr</span> slice, expr_context ctx)
-
-         -- can appear only <span class="hljs-keyword">in</span> <span class="hljs-type">Subscript</span>
-         | <span class="hljs-type">Slice</span>(<span class="hljs-built_in">expr</span>? lower, <span class="hljs-built_in">expr</span>? upper, <span class="hljs-built_in">expr</span>? step)
 
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)

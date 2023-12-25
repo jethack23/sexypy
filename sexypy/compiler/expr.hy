@@ -137,6 +137,39 @@
              :orelse (expr-compile orelse)
              #** sexp.position-info))
 
+(defn subscript-p [sexp]
+  (= sexp.op.name "sub"))
+
+(defn subscript-compile [sexp ctx]
+  (setv [_ value slice] sexp.list)
+  (ast.Subscript :value (expr-compile value)
+                 :slice (expr-compile slice)
+                 :ctx (ctx)
+                 #** sexp.position-info))
+
+(defn slice-p [sexp]
+  (= sexp.op.name ":"))
+
+(defn slice-compile [sexp]
+  (setv [_ #* args] sexp.list
+        args (deque args)
+        args-dict {})
+  (when args
+    (setv lower (args.popleft))
+    (when (!= lower "None")
+      (setv (get args-dict "lower") (expr-compile lower))))
+  (when args
+    (setv upper (args.popleft))
+    (when (!= upper "None")
+      (setv (get args-dict "upper") (expr-compile upper))))
+  (when args
+    (setv step (args.popleft))
+    (when (!= step "None")
+      (setv (get args-dict "lower") (expr-compile step))))
+  
+  (ast.Slice #** args-dict
+             #** sexp.position-info))
+
 (defn paren-compiler [sexp ctx]
   (cond
     (tuple-p sexp) (tuple-compile sexp ctx)
@@ -145,6 +178,8 @@
     (boolop-p sexp) (boolop-compile sexp)
     (compare-p sexp) (compare-compile sexp)
     (ifexp-p sexp) (ifexp-compile sexp)
+    (subscript-p sexp) (subscript-compile sexp ctx)
+    (slice-p sexp) (slice-compile sexp)
     True (call-compile sexp)))
 
 (defn list-compile [sexp ctx]
