@@ -11,7 +11,7 @@
   sexypy.compiler.utils *)
 
 (defn tuple-p [sexp]
-  (= sexp.op.name ","))
+  (= (str sexp.op) ","))
 
 (defn tuple-compile [sexp ctx]
   (setv [op #* args] sexp.list)
@@ -31,7 +31,7 @@
                     "~" ast.Invert})
 
 (defn unaryop-p [sexp]
-  (and (in sexp.op.name unaryop-dict)
+  (and (in (str sexp.op) unaryop-dict)
        (= (len sexp) 2)))
 
 (defn unaryop-compile [sexp]
@@ -55,7 +55,7 @@
                   "@" ast.MatMult})
 
 (defn binop-p [sexp]
-  (and (in sexp.op.name binop-dict)
+  (and (in (str sexp.op) binop-dict)
        (> (len sexp) 2)))
 
 (defn binop-compile [sexp]
@@ -68,7 +68,7 @@
                    "or" ast.Or})
 
 (defn boolop-p [sexp]
-  (in sexp.op.name boolop-dict))
+  (in (str sexp.op) boolop-dict))
 
 (defn boolop-compile [sexp]
   (setv [op #* args] sexp.list)
@@ -88,7 +88,7 @@
                     "not-in" ast.NotIn})
 
 (defn compare-p [sexp]
-  (in sexp.op.name compare-dict))
+  (in (str sexp.op) compare-dict))
 
 (defn compare-compile [sexp]
   (setv [op #* args] sexp.list
@@ -128,7 +128,7 @@
             #** sexp.position-info))
 
 (defn ifexp-p [sexp]
-  (= sexp.op.name "ifexp"))
+  (= (str sexp.op) "ifexp"))
 
 (defn ifexp-compile [sexp]
   (setv [_ test body orelse] sexp.list)
@@ -137,8 +137,40 @@
              :orelse (expr-compile orelse)
              #** sexp.position-info))
 
+(defn attribute-p [sexp]
+  (= (str sexp.op) "."))
+
+(defn attribute-compile [sexp ctx]
+  (setv [_ value #* attrs] sexp.list
+        rst (expr-compile value ctx)
+        position-info {#** sexp.position-info})
+  (for [attr attrs]
+    (setv (get position-info "end_lineno") (get attr.position-info "end_lineno")
+          (get position-info "end_col_offset") (get attr.position-info "end_col_offset")
+          rst (ast.Attribute :value rst
+                             :attr (str attr)
+                             :ctx (ctx)
+                             #** position-info)))
+  rst)
+
+(defn methodcall-p [sexp]
+  (.startswith (str sexp.op) "."))
+
+(defn methodcall-compile [sexp]
+  (setv [method instance #* operands] sexp.list
+        [args keywords] (call-args-parse operands)
+        func (ast.Attribute :value (expr-compile instance)
+                            :attr (get (str method) (slice 1 None))
+                            :ctx (ast.Load)
+                            #** (merge-position-infos method.position-info
+                                                      instance.position-info)))
+  (ast.Call :func func
+            :args args
+            :keywords keywords
+            #** sexp.position-info))
+
 (defn subscript-p [sexp]
-  (= sexp.op.name "sub"))
+  (= (str sexp.op) "sub"))
 
 (defn subscript-compile [sexp ctx]
   (setv [_ value slice] sexp.list)
@@ -148,7 +180,7 @@
                  #** sexp.position-info))
 
 (defn slice-p [sexp]
-  (= sexp.op.name ":"))
+  (= (str sexp.op) ":"))
 
 (defn slice-compile [sexp]
   (setv [_ #* args] sexp.list
@@ -171,7 +203,7 @@
              #** sexp.position-info))
 
 (defn lambda-p [sexp]
-  (= sexp.op.name "lambda"))
+  (= (str sexp.op) "lambda"))
 
 (defn lambda-compile [sexp]
   (setv [_ args body] sexp.list)
@@ -188,6 +220,8 @@
     (boolop-p sexp) (boolop-compile sexp)
     (compare-p sexp) (compare-compile sexp)
     (ifexp-p sexp) (ifexp-compile sexp)
+    (attribute-p sexp) (attribute-compile sexp ctx)
+    (methodcall-p sexp) (methodcall-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
     (slice-p sexp) (slice-compile sexp)
     (lambda-p sexp) (lambda-compile sexp)
@@ -221,7 +255,7 @@
             #** sexp.position-info))
 
 (defn brace-compiler [sexp]
-  (if (= sexp.op ",")
+  (if (= (str sexp.op) ",")
       (set-compile sexp)
       (dict-compile sexp)))
 

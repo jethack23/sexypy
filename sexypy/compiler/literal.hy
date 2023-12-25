@@ -12,6 +12,16 @@
 
 ;;; Variables in docs
 (defn name-compile [symbol ctx]
-  (ast.Name :id (symbol.name.replace "-" "_")
-            :ctx (ctx)
-            #** symbol.position-info))
+  (setv [name #* attrs] (.split (.replace symbol.name "-" "_") ".")
+        position-info {#** symbol.position-info}
+        (get position-info "end_col_offset") (+ (get position-info "col_offset") (len name))
+        rst (ast.Name :id name
+                      :ctx (ctx)
+                      #** position-info))
+  (for [attr attrs]
+    (+= (get position-info "end_col_offset") 1 (len attr))
+    (setv rst (ast.Attribute :value rst
+                             :attr attr
+                             :ctx (ctx)
+                             #** position-info)))
+  rst)

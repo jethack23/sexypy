@@ -11,14 +11,14 @@
             #** sexp.position-info))
 
 (defn do-p [sexp]
-  (= sexp.op.name "do"))
+  (= (str sexp.op) "do"))
 
 (defn do-compile [sexp]
   (setv [op #* sexps] sexp.list)
   (stmt-list-compile sexps))
 
 (defn assign-p [sexp]
-  (= sexp.op.name "="))
+  (= (str sexp.op) "="))
 
 (defn assign-compile [sexp]
   (setv [op #* targets value] sexp.list)
@@ -27,13 +27,13 @@
               #** sexp.position-info))
 
 (defn pass-p [sexp]
-  (= sexp.op.name "pass"))
+  (= (str sexp.op) "pass"))
 
 (defn pass-compile [sexp]
   (ast.Pass #** sexp.position-info))
 
 (defn if-p [sexp]
-  (= sexp.op.name "if"))
+  (= (str sexp.op) "if"))
 
 (defn if-stmt-compile [sexp]
   (setv [_ test then orelse]
@@ -46,7 +46,7 @@
           #** sexp.position-info))
 
 (defn deco-p [sexp]
-  (= sexp.op.name "deco"))
+  (= (str sexp.op) "deco"))
 
 (defn deco-compile [sexp decorator-list]
   (setv [op decorator def-statement] sexp.list
@@ -56,7 +56,7 @@
   (stmt-compile def-statement (+ (if decorator-list decorator-list []) new-deco-list)))
 
 (defn functiondef-p [sexp]
-  (= sexp.op.name "def"))
+  (= (str sexp.op) "def"))
 
 (defn functiondef-compile [sexp decorator-list]
   (setv [op fnname args #* body] sexp.list)
@@ -74,7 +74,7 @@
     #** sexp.position-info))
 
 (defn return-p [sexp]
-  (= sexp.op.name "return"))
+  (= (str sexp.op) "return"))
 
 (defn return-compile [sexp]
   (setv [op value] sexp.list)
@@ -82,7 +82,7 @@
               #** sexp.position-info))
 
 (defn classdef-p [sexp]
-  (= sexp.op.name "class"))
+  (= (str sexp.op) "class"))
 
 (defn classdef-args-parse [args]
   (setv q (deque args)

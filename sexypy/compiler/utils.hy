@@ -79,3 +79,9 @@
                  :kwarg kwarg
                  :defaults defaults
                  #** sexp.position-info))
+
+(defn merge-position-infos [#* position-infos]
+  {"lineno" (min (map (fn [x] (get x "lineno")) position-infos))
+   "col_offset" (min (map (fn [x] (get x "col_offset")) position-infos))
+   "end_lineno" (max (map (fn [x] (get x "end_lineno")) position-infos))
+   "end_col_offset" (max (map (fn [x] (get x "end_col_offset")) position-infos))})

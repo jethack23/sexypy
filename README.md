@@ -76,9 +76,6 @@ module <span class="hljs-type">Python</span>
          | <span class="hljs-type">FormattedValue</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">int</span> conversion, <span class="hljs-built_in">expr</span>? format_spec)
          | <span class="hljs-type">JoinedStr</span>(<span class="hljs-built_in">expr</span>* values)
 
-         -- the following expression can appear <span class="hljs-keyword">in</span> assignment context
-         | <span class="hljs-type">Attribute</span>(<span class="hljs-built_in">expr</span> value, identifier attr, expr_context ctx)
-
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
 
