@@ -115,11 +115,14 @@
     (.update-dict self.value key value)))
 
 (defclass Symbol [Node]
-  (defn __init__ [self name #** kwargs]
+  (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
-    (setv self.name name)
+    (setv self.value value)
     None)
 
+  (defn [property] name [self]
+    (.replace self.value "-" "_"))
+  
   (defn __repr__ [self]
     (+ "Sym("
        self.name
