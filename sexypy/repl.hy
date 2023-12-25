@@ -15,6 +15,7 @@
     (print "\nresult"))
   (while True
     (setv parsed (parse (input "calculate > ")))
+    (print (.join "\n" (map str parsed)))
     (setv stl (stmt-list-compile parsed))
     (print parsed)
     (eval-translate-print stl)
