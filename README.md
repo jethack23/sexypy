@@ -65,7 +65,6 @@ module <span class="hljs-type">Python</span>
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
 
     <span class="hljs-built_in">expr</span> = <span class="hljs-type">NamedExpr</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> value)
-         | <span class="hljs-type">Lambda</span>(arguments args, <span class="hljs-built_in">expr</span> body)
          | <span class="hljs-type">ListComp</span>(<span class="hljs-built_in">expr</span> elt, comprehension* generators)
          | <span class="hljs-type">SetComp</span>(<span class="hljs-built_in">expr</span> elt, comprehension* generators)
          | <span class="hljs-type">DictComp</span>(<span class="hljs-built_in">expr</span> key, <span class="hljs-built_in">expr</span> value, comprehension* generators)

@@ -170,6 +170,16 @@
   (ast.Slice #** args-dict
              #** sexp.position-info))
 
+(defn lambda-p [sexp]
+  (= sexp.op.name "lambda"))
+
+(defn lambda-compile [sexp]
+  (setv [_ args body] sexp.list)
+  (ast.Lambda
+    :args (def-args-parse args)
+    :body (expr-compile body)
+    #** sexp.position-info))
+
 (defn paren-compiler [sexp ctx]
   (cond
     (tuple-p sexp) (tuple-compile sexp ctx)
@@ -180,6 +190,7 @@
     (ifexp-p sexp) (ifexp-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
     (slice-p sexp) (slice-compile sexp)
+    (lambda-p sexp) (lambda-compile sexp)
     True (call-compile sexp)))
 
 (defn list-compile [sexp ctx]
