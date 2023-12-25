@@ -90,7 +90,7 @@
         keywords [])
   (while q
     (setv arg (q.popleft))
-    (if (keyward-arg-p arg)
+    (if (keyword-arg-p arg)
         (keywords.append (ast.keyword :arg (get arg.name (slice 1 None))
                                       :value (expr-compile (q.popleft))
                                       #** arg.position-info))

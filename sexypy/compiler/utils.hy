@@ -24,7 +24,7 @@
 (defn string-p [sexp]
   (isinstance sexp String))
 
-(defn keyward-arg-p [sexp]
+(defn keyword-arg-p [sexp]
   (and (isinstance sexp Symbol)
        (sexp.name.startswith ":")))
 
@@ -42,7 +42,7 @@
     (setv arg (q.popleft))
     (cond (= arg "/") (setv posonlyargs args
                             args [])
-          (keyward-arg-p arg) (do (args.append (ast.arg :arg (get arg.name (slice 1 None))
+          (keyword-arg-p arg) (do (args.append (ast.arg :arg (get arg.name (slice 1 None))
                                                         #** arg.position-info))
                                   (defaults.append (expr-compile (q.popleft))))
           True (args.append (ast.arg :arg arg.name
@@ -58,7 +58,7 @@
   ;; before doublestarred
   (while (and q (and (not (isinstance (get q 0) DoubleStarred))))
     (setv arg (q.popleft))
-    (if (keyward-arg-p arg)
+    (if (keyword-arg-p arg)
         (do (kwonlyargs.append (ast.arg :arg (get arg.name (slice 1 None))
                                         #** arg.position-info))
             (kw-defaults.append (expr-compile (q.popleft))))
