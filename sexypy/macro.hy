@@ -14,24 +14,26 @@
 
 (setv __macro-namespace {})
 
-(defn recursive-unquote [sexp scope]
+(defn recursive-unquote [sexp gscope lscope]
   (cond (isinstance sexp UnquoteSplice)
         (eval (compile (ast.Expression :body (expr-compile sexp.value))
                        "macro-unquoting-splice"
                        "eval")
-              scope)
+              gscope
+              lscope)
 
         (isinstance sexp Unquote)
         (eval (compile (ast.Expression :body (expr-compile sexp.value))
                        "macro-unquoting"
                        "eval")
-              scope)
+              gscope
+              lscope)
 
         (isinstance sexp Expression)
         (do (setv sexp.list
                   (reduce (fn [x y] (+ x (if (isinstance y UnquoteSplice)
-                                             (list (recursive-unquote y scope))
-                                             [(recursive-unquote y scope)])))
+                                             (list (recursive-unquote y gscope lscope))
+                                             [(recursive-unquote y gscope lscope)])))
                           sexp.list
                           []))
             sexp)
@@ -39,9 +41,9 @@
         True
         sexp))
 
-(defn macro-return [sexp scope]
+(defn macro-return [sexp gscope lscope]
   (cond (isinstance sexp QuasiQuote)
-        (recursive-unquote sexp.value scope)
+        (recursive-unquote sexp.value gscope lscope)
 
         (isinstance sexp Quote)
         sexp.value
@@ -60,6 +62,7 @@
         (Paren op
                (Paren (Symbol "macro-return" #** value.position-info)
                       (return-transform value)
+                      (single-parse "(globals)")
                       (single-parse "(locals)")
                       #** value.position-info)
                #** sexp.position-info))
