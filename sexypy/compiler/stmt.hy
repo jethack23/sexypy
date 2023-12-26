@@ -4,7 +4,8 @@
 (import functools [reduce])
 
 (import sexypy.compiler.expr [expr-compile]
-        sexypy.compiler.utils *)
+        sexypy.compiler.utils *
+        sexypy.utils *)
 
 (defn expr-wrapper [sexp]
   (ast.Expr :value (expr-compile sexp)
@@ -25,6 +26,20 @@
   (ast.Assign :targets (list (map (fn [x] (expr-compile x :ctx ast.Store)) targets))
               :value (expr-compile value)
               #** sexp.position-info))
+
+(defn augassign-p [sexp]
+  (in (str sexp.op) augassignop-dict))
+
+(defn augassign-compile [sexp]
+  (setv [op target #* args] sexp.list
+        op (get augassignop-dict (str op))
+        value (reduce (fn [x y] (ast.BinOp x (op) y
+                                           #** sexp.position-info))
+                      (map expr-compile args)))
+  (ast.AugAssign :target (expr-compile target ast.Store)
+                 :op (op)
+                 :value value
+                 #** sexp.position-info))
 
 (defn pass-p [sexp]
   (= (str sexp.op) "pass"))
@@ -125,6 +140,7 @@
   (cond (not (paren-p sexp)) (expr-wrapper sexp)
         (do-p sexp) (do-compile sexp)
         (assign-p sexp) (assign-compile sexp)
+        (augassign-p sexp) (augassign-compile sexp)        
         (pass-p sexp) (pass-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
         (while-p sexp) (while-compile sexp)

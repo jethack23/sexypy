@@ -8,7 +8,8 @@
 
 (import
   sexypy.compiler.literal *
-  sexypy.compiler.utils *)
+  sexypy.compiler.utils *
+  sexypy.utils *)
 
 (defn tuple-p [sexp]
   (= (str sexp.op) ","))
@@ -25,11 +26,6 @@
                :ctx (ctx)
                #** sexp.position-info))
 
-(setv unaryop-dict {"+" ast.UAdd
-                    "-" ast.USub
-                    "not" ast.Not
-                    "~" ast.Invert})
-
 (defn unaryop-p [sexp]
   (and (in (str sexp.op) unaryop-dict)
        (= (len sexp) 2)))
@@ -39,20 +35,6 @@
   (ast.UnaryOp ((get unaryop-dict op.name))
                (expr-compile operand)
                #** sexp.position-info))
-
-(setv binop-dict {"+" ast.Add
-                  "-" ast.Sub
-                  "*" ast.Mult
-                  "/" ast.Div
-                  "//" ast.FloorDiv
-                  "%" ast.Mod
-                  "**" ast.Pow
-                  "<<" ast.LShift
-                  ">>" ast.RShift
-                  "|" ast.BitOr
-                  "^" ast.BitXor
-                  "&" ast.BitAnd
-                  "@" ast.MatMult})
 
 (defn binop-p [sexp]
   (and (in (str sexp.op) binop-dict)
@@ -64,9 +46,6 @@
                                #** sexp.position-info))
           (map expr-compile args)))
 
-(setv boolop-dict {"and" ast.And
-                   "or" ast.Or})
-
 (defn boolop-p [sexp]
   (in (str sexp.op) boolop-dict))
 
@@ -75,17 +54,6 @@
   (ast.BoolOp ((get boolop-dict op.name))
               (list (map expr-compile args))
               #** sexp.position-info))
-
-(setv compare-dict {"==" ast.Eq
-                    "!=" ast.NotEq
-                    "<" ast.Lt
-                    "<=" ast.LtE
-                    ">" ast.Gt
-                    ">=" ast.GtE
-                    "is" ast.Is
-                    "is-not" ast.IsNot
-                    "in" ast.In
-                    "not-in" ast.NotIn})
 
 (defn compare-p [sexp]
   (in (str sexp.op) compare-dict))
