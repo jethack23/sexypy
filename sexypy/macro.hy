@@ -60,13 +60,13 @@
         (Paren op
                (Paren (Symbol "macro-return" #** value.position-info)
                       (return-transform value)
-                      (Symbol "scope" #** value.position-info)
+                      (single-parse "(locals)")
                       #** value.position-info)
                #** sexp.position-info))
 
     True
-    (Paren #* (list (map return-transform sexp.list))
-           #** sexp.position-info)))
+    (sexp.__class__ #* (list (map return-transform sexp.list))
+                    #** sexp.position-info)))
 
 (defn define-macro [sexp]
   (setv [op macroname args #* body] sexp.list
@@ -74,8 +74,7 @@
         sexps [(Paren (Symbol "def" #** op.position-info)
                       (Symbol new-name #** macroname.position-info)
                       args
-                      #* (+ [(single-parse "(= scope (locals))")]
-                            (list (map return-transform body)))
+                      #* (list (map return-transform body))
                       #** sexp.position-info)
                (single-parse (+ "(= (sub __macro-namespace \""
                                 macroname.value
