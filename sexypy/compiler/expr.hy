@@ -60,7 +60,7 @@
 
 (defn binop-compile [sexp]
   (setv [op #* args] sexp.list)
-  (reduce (fn [x y] (ast.BinOp x ((get binop-dict op.name)) y
+  (reduce (fn [x y] (ast.BinOp x ((get binop-dict (str op))) y
                                #** sexp.position-info))
           (map expr-compile args)))
 

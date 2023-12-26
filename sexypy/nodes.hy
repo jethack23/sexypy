@@ -125,11 +125,11 @@
   
   (defn __repr__ [self]
     (+ "Sym("
-       self.name
+       self.value
        ")"))
 
   (defn __str__ [self]
-    self.name))
+    self.value))
 
 (defclass String [Node]
   (defn __init__ [self value #** kwargs]
