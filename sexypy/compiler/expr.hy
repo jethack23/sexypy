@@ -270,6 +270,14 @@
       (set-compile sexp)
       (dict-compile sexp)))
 
+(defn metaindicator-p [sexp]
+  (isinstance sexp MetaIndicator))
+
+(defn metaindicator-compile [sexp]
+  ;; TODO: more direct implementation of metaindicator-compile.
+  (setv new-sexp (single-parse (+ "(single-parse \"" (str sexp) "\")")))
+  (call-compile new-sexp))
+
 (defn expr-compile [sexp [ctx ast.Load]]
   (cond (paren-p sexp) (paren-compiler sexp ctx)
         (bracket-p sexp) (bracket-compiler sexp ctx)
@@ -277,4 +285,5 @@
         (starred-p sexp) (starred-compile sexp ctx)
         (constant-p sexp) (constant-compile sexp)
         (string-p sexp) (string-compile sexp)
+        (metaindicator-p sexp) (metaindicator-compile sexp)
         True (name-compile sexp ctx)))

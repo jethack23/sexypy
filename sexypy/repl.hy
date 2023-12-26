@@ -4,6 +4,7 @@
 
 (import sexypy.parser *)
 (import sexypy.compiler *)
+(import sexypy.macro [macroexpand-then-compile])
 
 (defn ast-to-python [st]
   (str (ast.unparse st)))
@@ -16,9 +17,8 @@
   (while True
     (setv parsed (parse (input "calculate > ")))
     (print (.join "\n" (map str parsed)))
-    (setv stl (stmt-list-compile parsed))
+    (setv stl (macroexpand-then-compile parsed))    
     (print parsed)
     (eval-translate-print stl)
     (for [st stl]
-      (eval (compile (ast.Interactive :body [st]) "" "single")))
-    ))
+      (eval (compile (ast.Interactive :body [st]) "" "single")))))

@@ -1,6 +1,5 @@
 (defclass Node []
   (defn __init__ [self #* args #** kwargs]
-    (setv self.lineno 0)
     (for [[k v] (kwargs.items)]
       (setv (get self.__dict__ k) v)))
 
@@ -158,3 +157,49 @@
 
   (defn __str__ [self]
     (.replace (str self.value) "\'" "")))
+
+(defclass MetaIndicator [Node]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super) #** kwargs)    
+    (setv self.value value)
+    None))
+
+(defclass Quote [MetaIndicator]
+  (defn __repr__ [self]
+    (+ "Quote("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ "'"
+       (str self.value))))
+
+(defclass QuasiQuote [Quote]
+  (defn __repr__ [self]
+    (+ "QuasiQuote("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ "`"
+       (str self.value))))
+
+(defclass Unquote [MetaIndicator]
+  (defn __repr__ [self]
+    (+ "Unquote("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ "~"
+       (str self.value))))
+
+(defclass UnquoteSplice [Unquote]
+  (defn __repr__ [self]
+    (+ "UnquoteSplice("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ "~@"
+       (str self.value))))

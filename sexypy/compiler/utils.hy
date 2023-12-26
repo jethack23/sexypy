@@ -1,7 +1,8 @@
 (import ast)
 (import collections [deque])
 
-(import sexypy.nodes *)
+(import sexypy.nodes *
+        sexypy.parser *)
 
 (defn paren-p [sexp]
   (isinstance sexp Paren))
@@ -85,3 +86,7 @@
    "col_offset" (min (map (fn [x] (get x "col_offset")) position-infos))
    "end_lineno" (max (map (fn [x] (get x "end_lineno")) position-infos))
    "end_col_offset" (max (map (fn [x] (get x "end_col_offset")) position-infos))})
+
+
+(defn single-parse [src]
+  (get (parse src) 0))

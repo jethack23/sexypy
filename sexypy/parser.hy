@@ -26,7 +26,7 @@
                                             r"\"\"\"(?:[^\\\"]|\\.)*\"\"\""
                                             r"\"(?:[^\\\"]|\\.)*\""])
                                       ["'''" "\"\"\"" "\""]))
-                        [r"'(?!\s|$)" "quote"]
+                        [r"(?:'|`|~@|~)(?!\s|$)" "meta-indicator"]
                         [r";[^\n]*" "comment"]
                         [(+ r"[+-]*(?:" (.join "|" [complex-simple number-simple]) r")(?=\s|$|\)|\}|\])")
                          "number"]
@@ -70,6 +70,11 @@
                     "{" Brace
                     "[" Bracket})
 
+(setv meta-indicator-dict {"'" Quote
+                           "`" QuasiQuote
+                           "~" Unquote
+                           "~@" UnquoteSplice})
+
 (defn parse [src]
   (setv tokens (tokenize src)
         stack []
@@ -80,19 +85,33 @@
           
           [lineno col-offset end-lineno end-col-offset]
           (position-info-into-list position-info))
-    (cond (= tktype "closing") (do (setv e (stack.pop))
-                                   (e.update-dict "end_lineno" end-lineno)
-                                   (e.update-dict "end_col_offset" end-col-offset)
-                                   (if stack
-                                       (.append (get stack -1) e)
-                                       (.append rst e)))
-          (= tktype "opening") (stack.append ((get star-list (- (len t) 1))
-                                               :value ((get opening-dict (get t -1))
-                                                        :lineno lineno
-                                                        :col-offset (+ col-offset (- (len t) 1)))
-                                               :lineno lineno
-                                               :col-offset col-offset))
-          True (.append (if stack (get stack -1) rst) (token-parse t tktype position-info))))
+    (cond (= tktype "opening")
+          (stack.append ((get star-list (- (len t) 1))
+                          :value ((get opening-dict (get t -1))
+                                   :lineno lineno
+                                   :col-offset (+ col-offset (- (len t) 1)))
+                          :lineno lineno
+                          :col-offset col-offset))
+
+          (= tktype "meta-indicator")
+          (stack.append ((get meta-indicator-dict t)
+                          :value None
+                          :lineno lineno
+                          :col-offset col-offset))
+
+          True
+          (do (if (= tktype "closing")
+                  (do (setv e (stack.pop))
+                      (e.update-dict "end_lineno" end-lineno)
+                      (e.update-dict "end_col_offset" end-col-offset))
+                  (setv e (token-parse t tktype position-info)))
+              (while (and stack (isinstance (get stack -1) MetaIndicator))
+                (setv popped (stack.pop)
+                      popped.value e)
+                (popped.update-dict "end_lineno" end-lineno)
+                (popped.update-dict "end_col_offset" end-col-offset)
+                (setv e popped))
+              (.append (if stack (get stack -1) rst) e))))
   rst)
 
 (setv special-literals #("True" "False" "None" "..."))
