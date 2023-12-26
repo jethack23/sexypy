@@ -45,6 +45,17 @@
           :orelse (if orelse (stmt-list-compile [orelse]) [])
           #** sexp.position-info))
 
+(defn while-p [sexp]
+  (= (str sexp.op) "while"))
+
+(defn while-compile [sexp]
+  ;; TODO: orelse
+  (setv [_ test #* body] sexp.list)
+  (ast.While :test (expr-compile test)
+             :body (stmt-list-compile body)
+             :orelse []
+             #** sexp.position-info))
+
 (defn deco-p [sexp]
   (= (str sexp.op) "deco"))
 
@@ -116,6 +127,7 @@
         (assign-p sexp) (assign-compile sexp)
         (pass-p sexp) (pass-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
+        (while-p sexp) (while-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
