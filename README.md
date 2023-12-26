@@ -56,7 +56,6 @@ module <span class="hljs-type">Python</span>
           | <span class="hljs-type">ImportFrom</span>(identifier? module, alias* names, <span class="hljs-built_in">int</span>? level)
 
           | <span class="hljs-type">Global</span>(identifier* names)
-          | <span class="hljs-type">Nonlocal</span>(identifier* names)
           | <span class="hljs-type">Expr</span>(<span class="hljs-built_in">expr</span> value)
           | <span class="hljs-type">Pass</span> | <span class="hljs-type">Break</span> | <span class="hljs-type">Continue</span>
 

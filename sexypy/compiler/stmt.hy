@@ -107,6 +107,14 @@
   (ast.Return :value (expr-compile value)
               #** sexp.position-info))
 
+(defn nonlocal-p [sexp]
+  (= (str sexp.op) "nonlocal"))
+
+(defn nonlocal-compile [sexp]
+  (setv [_ #* args] sexp.list)
+  (ast.Nonlocal :names (list (map (fn [x] x.name) args))
+              #** sexp.position-info))
+
 (defn classdef-p [sexp]
   (= (str sexp.op) "class"))
 
@@ -147,6 +155,7 @@
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
+        (nonlocal-p sexp) (nonlocal-compile sexp)
         (classdef-p sexp) (classdef-compile sexp decorator-list)
         ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
         True (expr-wrapper sexp)))
