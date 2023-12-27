@@ -242,9 +242,12 @@
   (isinstance sexp MetaIndicator))
 
 (defn metaindicator-compile [sexp]
-  ;; TODO: more direct implementation of metaindicator-compile.
-  (setv new-sexp (single-parse (+ "(single-parse \"" (str sexp) "\")")))
-  (call-compile new-sexp))
+  ;; maybe can transform into ast classes directly.
+  (if (isinstance sexp Quote)
+      (expr-compile (single-parse
+                      (sexp.value.src-to-generate
+                        (isinstance sexp QuasiQuote))))
+      (raise (ValueError "'unquote' is not allowed here"))))
 
 (defn expr-compile [sexp [ctx ast.Load]]
   (cond (paren-p sexp) (paren-compiler sexp ctx)
