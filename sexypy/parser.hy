@@ -166,9 +166,9 @@
 (defn string-parse [token tktype position-info]
   (setv [prefix #* content _] (token.split tktype))
   (if (in "f" prefix)
-      (f-string-parse token position-info)
+      (f-string-parse token #** position-info)
       (String token #** position-info)))
 
-(defn f-string-parse [token]
+(defn f-string-parse [token #** kwargs]
   ;; TODO
   )
