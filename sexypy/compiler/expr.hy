@@ -32,7 +32,7 @@
 
 (defn unaryop-compile [sexp]
   (setv [op operand] sexp.list)
-  (ast.UnaryOp ((get unaryop-dict op.name))
+  (ast.UnaryOp ((get unaryop-dict (str op)))
                (expr-compile operand)
                #** sexp.position-info))
 
