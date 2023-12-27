@@ -38,8 +38,7 @@
         kw-defaults []
         defaults [])
   ;; before starred
-  (while (and q (and (not (isinstance (get q 0) Starred))
-                     (!= (get q 0) "*")))
+  (while (and q (not (.startswith (str (get q 0)) "*")))
     (setv arg (q.popleft))
     (cond (= arg "/") (setv posonlyargs args
                             args [])
