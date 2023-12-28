@@ -30,7 +30,7 @@
   (eval (compile (ast.Interactive :body (stmt-list-compile sexps))
                  "macro-defining"
                  "single"))
-  (print "macro defined: " new-name)
+  (print "# macro defined: " new-name)
   None)
 
 (defn macroexpand [sexp]

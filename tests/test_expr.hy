@@ -2,7 +2,7 @@
 
 (import unittest)
 
-(import .utils [parse src-to-python])
+(import sexypy.sx2py [parse src-to-python])
 
 (defclass TestUnaryOpMethods [unittest.TestCase]
 

@@ -2,7 +2,7 @@
 
 (import unittest)
 
-(import .utils [src-to-python])
+(import sexypy.sx2py [src-to-python])
 
 (defmacro self-retrieval-assert [src]
   `(equal-test ~src ~src))
