@@ -39,7 +39,6 @@ module <span class="hljs-type">Python</span>
           | <span class="hljs-type">AnnAssign</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> annotation, <span class="hljs-built_in">expr</span>? value, <span class="hljs-built_in">int</span> simple)
 
           -- use 'orelse' because <span class="hljs-keyword">else</span> <span class="hljs-keyword">is</span> a keyword <span class="hljs-keyword">in</span> target languages
-          | <span class="hljs-type">For</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> iter, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">string</span>? type_comment)
           | <span class="hljs-type">AsyncFor</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> iter, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">string</span>? type_comment)
           | <span class="hljs-type">While</span>(<span class="hljs-built_in">expr</span> test, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">stmt</span>* orelse)
           | <span class="hljs-type">With</span>(withitem* items, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">string</span>? type_comment)

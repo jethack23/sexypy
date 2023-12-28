@@ -73,6 +73,20 @@
              :orelse (if orelse (stmt-list-compile [orelse]) [])
              #** sexp.position-info))
 
+(defn for-p [sexp]
+  (= (str sexp.op) "for"))
+
+(defn for-compile [sexp]
+  (setv [_ target iterable body orelse]
+        (if (< (len sexp.list) 5)
+            [#* sexp.list None]
+            sexp.list))
+  (ast.For :target (expr-compile target ast.Store)
+           :iter (expr-compile iterable)
+           :body (stmt-list-compile [body])
+           :orelse (if orelse (stmt-list-compile [orelse]) [])
+           #** sexp.position-info))
+
 (defn deco-p [sexp]
   (= (str sexp.op) "deco"))
 
@@ -154,6 +168,7 @@
         (pass-p sexp) (pass-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
         (while-p sexp) (while-compile sexp)
+        (for-p sexp) (for-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
