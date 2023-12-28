@@ -121,6 +121,9 @@
           self.classname "Starred")
     None)
 
+  (defn src-operands-generate [self in-quasi position-info given-indent]
+    (self.value.src-to-generate in-quasi position-info given-indent))
+
   (defn __repr__ [self]
     (+ "Star("
        (repr self.value)
@@ -143,6 +146,9 @@
     (setv self.value value
           self.classname "DoubleStarred")
     None)
+
+  (defn src-operands-generate [self in-quasi position-info given-indent]
+    (self.value.src-to-generate in-quasi position-info given-indent))
 
   (defn __repr__ [self]
     (+ "DStar("
