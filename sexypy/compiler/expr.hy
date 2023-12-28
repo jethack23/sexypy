@@ -96,7 +96,7 @@
             #** sexp.position-info))
 
 (defn ifexp-p [sexp]
-  (= (str sexp.op) "ifexp"))
+  (= (str sexp.op) "ife"))
 
 (defn ifexp-compile [sexp]
   (setv [_ test body orelse] sexp.list)

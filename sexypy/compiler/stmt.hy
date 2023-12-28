@@ -48,7 +48,7 @@
   (ast.Pass #** sexp.position-info))
 
 (defn if-p [sexp]
-  (= (str sexp.op) "if"))
+  (= (str sexp.op) "ifs"))
 
 (defn if-stmt-compile [sexp]
   (setv [_ test then orelse]
@@ -64,11 +64,13 @@
   (= (str sexp.op) "while"))
 
 (defn while-compile [sexp]
-  ;; TODO: orelse
-  (setv [_ test #* body] sexp.list)
+  (setv [_ test then orelse]
+        (if (< (len sexp.list) 4)
+            [#* sexp.list None]
+            sexp.list))
   (ast.While :test (expr-compile test)
-             :body (stmt-list-compile body)
-             :orelse []
+             :body (stmt-list-compile [then])
+             :orelse (if orelse (stmt-list-compile [orelse]) [])
              #** sexp.position-info))
 
 (defn deco-p [sexp]
