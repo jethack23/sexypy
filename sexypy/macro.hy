@@ -45,10 +45,11 @@
             (macroexpand ((get __macro-namespace (str op)) #* operands))
 
             True
-            (do (setv sexp.list (list (map macroexpand sexp.list)))
+            (do (setv sexp.list (list (filter (fn [x] (not (is x None)))
+                                              (map macroexpand sexp.list))))
                 sexp)))))
 
 
 (defn macroexpand-then-compile [sexp-list]
-  (stmt-list-compile (filter (fn [x] x)
+  (stmt-list-compile (filter (fn [x] (not (is x None)))
                              (map macroexpand sexp-list))))
