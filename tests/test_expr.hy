@@ -44,7 +44,7 @@
   )
 
 (defclass TestCallMethods [unittest.TestCase]
-  
+
   (defn test-call [self]
     ;; dummy test case
     (self.assertEqual (parse "((a b c) d e)") "asdf")))

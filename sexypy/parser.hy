@@ -83,7 +83,7 @@
   (while tokens
     (setv [t tktype position-info]
           (tokens.popleft)
-          
+
           [lineno col-offset end-lineno end-col-offset]
           (position-info-into-list position-info))
     (cond (= tktype "opening")
@@ -123,17 +123,17 @@
 
         (and (> (len token) 1) (= (get token 0) "*"))
         (star-token-parse token tktype position-info)
-        
+
         (and (> (len token) 1) (in (get token 0) "+-"))
         (unary-op-parse token tktype position-info)
-        
+
         (or  (= tktype "number")
              (in token special-literals))
         (Constant token #** position-info)
-        
+
         (in tktype ["'''" "\"\"\"" "\""])
         (string-parse token tktype position-info)
-        
+
         True (Symbol token #** position-info)))
 
 (defn star-token-parse [token tktype position-info]

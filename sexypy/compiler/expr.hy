@@ -176,7 +176,7 @@
     (setv step (args.popleft))
     (when (!= step "None")
       (setv (get args-dict "step") (expr-compile step))))
-  
+
   (ast.Slice #** args-dict
              #** sexp.position-info))
 

@@ -23,7 +23,7 @@
       augassignop-dict (dfor [k v] (binop-dict.items) (+ k "=") v)
 
       boolop-dict {"and" ast.And
-                   "or" ast.Or}      
+                   "or" ast.Or}
 
       compare-dict {"==" ast.Eq
                     "!=" ast.NotEq

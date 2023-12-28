@@ -6,14 +6,14 @@
       (setv (get self.__dict__ k) v)))
 
   (defn update-dict [self key value]
-    (setv (get self.__dict__ key) value))  
+    (setv (get self.__dict__ key) value))
 
   (defn [property] position-info [self]
     {"lineno" self.lineno
      "end_lineno" self.end-lineno
      "col_offset" self.col-offset
      "end_col_offset" self.end-col-offset})
-  
+
   (defn indent [self given-indent]
     (+ (* " " (+ 2 (len self.classname))) given-indent))
 
@@ -169,7 +169,7 @@
 
   (defn [property] name [self]
     (.replace self.value "-" "_"))
-  
+
   (defn __repr__ [self]
     (+ "Sym("
        self.value
@@ -217,10 +217,10 @@
 
 (defclass MetaIndicator [Node]
   (defn __init__ [self value #** kwargs]
-    (.__init__ (super) #** kwargs)    
+    (.__init__ (super) #** kwargs)
     (setv self.value value)
     None)
-  
+
   (defn src-operands-generate [self in-quasi position-info given-indent]
     (self.value.src-to-generate (isinstance self QuasiQuote)
                                 position-info
@@ -267,7 +267,7 @@
     (if in-quasi
         (+ (if (isinstance self UnquoteSplice) "*" "") (str self.value))
         (self._src-to-generate False position-info given-indent)))
-  
+
   (defn __repr__ [self]
     (+ "Unquote("
        (repr self.value)
@@ -279,7 +279,7 @@
 
 (defclass UnquoteSplice [Unquote]
   (defn __init__ [self value #** kwargs]
-    (.__init__ (super) value #** kwargs)    
+    (.__init__ (super) value #** kwargs)
     (setv self.classname "UnquoteSplice")
     None)
 

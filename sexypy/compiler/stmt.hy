@@ -54,7 +54,7 @@
   (setv [_ test then orelse]
         (if (< (len sexp.list) 4)
             [#* sexp.list None]
-            sexp.list)) 
+            sexp.list))
   (ast.If :test (expr-compile test)
           :body (stmt-list-compile [then])
           :orelse (if orelse (stmt-list-compile [orelse]) [])
@@ -148,7 +148,7 @@
   (cond (not (paren-p sexp)) (expr-wrapper sexp)
         (do-p sexp) (do-compile sexp)
         (assign-p sexp) (assign-compile sexp)
-        (augassign-p sexp) (augassign-compile sexp)        
+        (augassign-p sexp) (augassign-compile sexp)
         (pass-p sexp) (pass-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
         (while-p sexp) (while-compile sexp)

@@ -22,7 +22,7 @@
       (setv line (input "")))
     (setv parsed (parse src))
     ;; (print (.join "\n" (map str parsed)))
-    (setv stl (macroexpand-then-compile parsed))    
+    (setv stl (macroexpand-then-compile parsed))
     ;; (print parsed)
     (eval-translate-print stl)
     (for [st stl]

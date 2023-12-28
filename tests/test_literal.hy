@@ -11,7 +11,7 @@
   `(self.assertEqual (src-to-python ~a) ~b))
 
 (defclass TestNumberMethods [unittest.TestCase]
-  
+
   (defn test-integer [self]
     (self-retrieval-assert "1")
     (self-retrieval-assert "21234"))
