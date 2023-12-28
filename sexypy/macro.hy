@@ -42,7 +42,7 @@
             (define-macro sexp)
 
             (in (str op) __macro-namespace)
-            ((get __macro-namespace (str op)) #* operands)
+            (macroexpand ((get __macro-namespace (str op)) #* operands))
 
             True
             (do (setv sexp.list (list (map macroexpand sexp.list)))
