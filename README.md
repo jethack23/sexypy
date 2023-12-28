@@ -110,4 +110,5 @@ module <span class="hljs-type">Python</span>
 
 }</pre>
 
-Implemented Components are removed
+Implemented Components are removed   
+- type_comment never considered. Later, it should be covered
