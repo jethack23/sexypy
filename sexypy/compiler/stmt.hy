@@ -48,7 +48,7 @@
   (ast.Pass #** sexp.position-info))
 
 (defn if-p [sexp]
-  (= (str sexp.op) "ifs"))
+  (= (str sexp.op) "if"))
 
 (defn if-stmt-compile [sexp]
   (setv [_ test then orelse]
