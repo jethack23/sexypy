@@ -7,12 +7,21 @@
         sexypy.repl [ast-to-python])
 
 (defn src-to-python [src]
-  (.join "\n\n\n" (map ast-to-python (-> src
-                                         (parse)
-                                         (macroexpand-then-compile)))))
+  (.join "\n" (map ast-to-python (-> src
+                                     (parse)
+                                     (macroexpand-then-compile)))))
 
 (defmain [_ file]
-  (with [f (open file "r")]
-    (with [g (open (.replace file ".hy" ".py") "w")]
-      (g.write (src-to-python (f.read)))))
-  (subprocess.run ["black" (.replace file ".hy" ".py")] ))
+  (with [g (open (.replace file ".hy" ".py") "w")]
+    (with [f (open file "r")]
+      (setv org (f.read))
+      (g.write (src-to-python org))
+      (setv lines (.split org "\n"))
+      (while (= (get lines -1) "")
+        (lines.pop))
+      (g.write "\n\n\n# translated from below s-expression\n\n")
+      (g.write (.join "\n" (map (fn [x] (+ "# " x))
+                              lines)))))
+  (subprocess.run ["black" (.replace file ".hy" ".py")])
+  (subprocess.run ["python" (.replace file ".hy" ".py")])
+  )
