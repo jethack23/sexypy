@@ -34,7 +34,6 @@ module <span class="hljs-type">Python</span>
                              <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
                              <span class="hljs-built_in">string</span>? type_comment)
 
-          | <span class="hljs-type">Delete</span>(<span class="hljs-built_in">expr</span>* targets)
           -- 'simple' indicates that we annotate simple name <span class="hljs-keyword">without</span> parens
           | <span class="hljs-type">AnnAssign</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> annotation, <span class="hljs-built_in">expr</span>? value, <span class="hljs-built_in">int</span> simple)
 

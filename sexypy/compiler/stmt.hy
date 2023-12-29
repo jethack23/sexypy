@@ -41,6 +41,13 @@
                  :value value
                  #** sexp.position-info))
 
+(defn del-compile [sexp]
+  (setv [op #* args] sexp.list)
+  (ast.Delete
+    :targets (list (map (fn [x] (expr-compile x ast.Del))
+                        args))
+    #** sexp.position-info))
+
 (defn import-compile [sexp]
   (setv [_ #* names] sexp.list)
   (ast.Import :names (list (map (fn [x] (ast.alias x.name
@@ -168,6 +175,7 @@
         (do-p sexp) (do-compile sexp)
         (assign-p sexp) (assign-compile sexp)
         (augassign-p sexp) (augassign-compile sexp)
+        (= (str sexp.op) "del") (del-compile sexp)
         (= (str sexp.op) "pass") (ast.Pass #** sexp.position-info)
         (= (str sexp.op) "import") (import-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
