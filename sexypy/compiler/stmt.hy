@@ -41,12 +41,6 @@
                  :value value
                  #** sexp.position-info))
 
-(defn pass-p [sexp]
-  (= (str sexp.op) "pass"))
-
-(defn pass-compile [sexp]
-  (ast.Pass #** sexp.position-info))
-
 (defn if-p [sexp]
   (= (str sexp.op) "if"))
 
@@ -123,13 +117,15 @@
   (ast.Return :value (expr-compile value)
               #** sexp.position-info))
 
-(defn nonlocal-p [sexp]
-  (= (str sexp.op) "nonlocal"))
+(defn global-compile [sexp]
+  (setv [_ #* args] sexp.list)
+  (ast.Global :names (list (map (fn [x] x.name) args))
+              #** sexp.position-info))
 
 (defn nonlocal-compile [sexp]
   (setv [_ #* args] sexp.list)
   (ast.Nonlocal :names (list (map (fn [x] x.name) args))
-              #** sexp.position-info))
+                #** sexp.position-info))
 
 (defn classdef-p [sexp]
   (= (str sexp.op) "class"))
@@ -165,14 +161,17 @@
         (do-p sexp) (do-compile sexp)
         (assign-p sexp) (assign-compile sexp)
         (augassign-p sexp) (augassign-compile sexp)
-        (pass-p sexp) (pass-compile sexp)
+        (= (str sexp.op) "pass") (ast.Pass #** sexp.position-info)
         (if-p sexp) (if-stmt-compile sexp)
         (while-p sexp) (while-compile sexp)
         (for-p sexp) (for-compile sexp)
+        (= (str sexp.op) "break") (ast.Break #** sexp.position-info)
+        (= (str sexp.op) "continue") (ast.Continue #** sexp.position-info)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
-        (nonlocal-p sexp) (nonlocal-compile sexp)
+        (= (str sexp.op) "global") (global-compile sexp)
+        (= (str sexp.op) "nonlocal") (nonlocal-compile sexp)
         (classdef-p sexp) (classdef-compile sexp decorator-list)
         ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
         True (expr-wrapper sexp)))
