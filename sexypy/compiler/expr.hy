@@ -151,11 +151,19 @@
   (= (str sexp.op) "sub"))
 
 (defn subscript-compile [sexp ctx]
-  (setv [_ value slice] sexp.list)
-  (ast.Subscript :value (expr-compile value)
-                 :slice (expr-compile slice)
-                 :ctx (ctx)
-                 #** sexp.position-info))
+  (setv [op value #* slices] sexp.list
+        op-pos op.position-info
+        rst (reduce (fn [rst slice]
+                      (ast.Subscript :value rst
+                                     :slice (expr-compile slice)
+                                     :ctx (ast.Load)
+                                     #** (merge-position-infos
+                                           op-pos
+                                           slice.position-info)))
+                    slices
+                    (expr-compile value))
+        rst.ctx (ctx))
+  rst)
 
 (defn slice-p [sexp]
   (= (str sexp.op) ":"))
