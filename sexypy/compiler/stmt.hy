@@ -41,6 +41,13 @@
                  :value value
                  #** sexp.position-info))
 
+(defn import-compile [sexp]
+  (setv [_ #* names] sexp.list)
+  (ast.Import :names (list (map (fn [x] (ast.alias x.name
+                                                   #** x.position-info))
+                                names))
+              #** sexp.position-info))
+
 (defn if-p [sexp]
   (= (str sexp.op) "if"))
 
@@ -162,6 +169,7 @@
         (assign-p sexp) (assign-compile sexp)
         (augassign-p sexp) (augassign-compile sexp)
         (= (str sexp.op) "pass") (ast.Pass #** sexp.position-info)
+        (= (str sexp.op) "import") (import-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
         (while-p sexp) (while-compile sexp)
         (for-p sexp) (for-compile sexp)
