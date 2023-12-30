@@ -7,8 +7,7 @@
 (import
   sexypy.utils *
   sexypy.nodes *
-  sexypy.compiler [stmt-list-compile
-                   expr-compile
+  sexypy.compiler [expr-compile
                    def-args-parse])
 
 (defn return-compile [sexp]
@@ -71,6 +70,23 @@
                                               (map macroexpand sexp.list))))
                 sexp)))))
 
+
+
+
+(defn expr-wrapper [sexp]
+  (ast.Expr :value (expr-compile sexp)
+            #** sexp.position-info))
+
+(defn stmt-compile [sexp [decorator-list None]]
+  (cond (isinstance sexp ast.AST) sexp
+        True (expr-wrapper sexp)))
+
+(defn stmt-list-compile [sexp-list]
+  (reduce (fn [x y] (+ x (if (isinstance y list)
+                             y
+                             [y])))
+          (map stmt-compile sexp-list)
+          []))
 
 (defn macroexpand-then-compile [sexp-list]
   (stmt-list-compile (filter (fn [x] (not (is x None)))

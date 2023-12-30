@@ -7,8 +7,7 @@
 
 (import toolz [identity])
 
-(import sexypy.nodes *
-        sexypy.utils [augassignop-dict])
+(import sexypy.nodes *)
 
 ;;; tokenizer for future which aware of lienno and offset
 (defn tokenize [src]
@@ -118,7 +117,7 @@
 (setv special-literals #("True" "False" "None" "..."))
 
 (defn token-parse [token tktype position-info]
-  (cond (in token augassignop-dict)
+  (cond (.endswith token "=")
         (Symbol token #** position-info)
 
         (and (> (len token) 1) (= (get token 0) ":"))

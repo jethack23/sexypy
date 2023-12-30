@@ -9,5 +9,4 @@
 (import sexypy.nodes *
 
         sexypy.compiler.expr *
-        sexypy.compiler.stmt *
         sexypy.compiler.utils *)
