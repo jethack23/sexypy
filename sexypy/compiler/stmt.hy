@@ -55,6 +55,19 @@
                                 names))
               #** sexp.position-info))
 
+(defn importfrom-compile [sexp]
+  (setv [_ #* args] sexp.list
+        modules (cut args None None 2)
+        namess (cut args 1 None 2))
+  (lfor [module names] (zip modules namess)
+        (ast.ImportFrom :module module.name
+                        :names (list (map (fn [x] (ast.alias x.name
+                                                             #** x.position-info))
+                                          names.list))
+                        #** (merge-position-infos
+                              module.position-info
+                              names.position-info))))
+
 (defn if-p [sexp]
   (= (str sexp.op) "if"))
 
@@ -178,6 +191,7 @@
         (= (str sexp.op) "del") (del-compile sexp)
         (= (str sexp.op) "pass") (ast.Pass #** sexp.position-info)
         (= (str sexp.op) "import") (import-compile sexp)
+        (= (str sexp.op) "from") (importfrom-compile sexp)
         (if-p sexp) (if-stmt-compile sexp)
         (while-p sexp) (while-compile sexp)
         (for-p sexp) (for-compile sexp)

@@ -49,8 +49,6 @@ module <span class="hljs-type">Python</span>
           | <span class="hljs-type">TryStar</span>(<span class="hljs-built_in">stmt</span>* body, excepthandler* handlers, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">stmt</span>* finalbody)
           | <span class="hljs-type">Assert</span>(<span class="hljs-built_in">expr</span> test, <span class="hljs-built_in">expr</span>? msg)
 
-          | <span class="hljs-type">ImportFrom</span>(identifier? module, alias* names, <span class="hljs-built_in">int</span>? level)
-
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
 
