@@ -68,3 +68,37 @@
   (return `(def-compile
              ~def-statement
              ~(+ (ife decorator-list decorator-list []) new-deco-list))))
+
+(defmacro global-compile [sexp]
+  (= [_ *args] sexp.list)
+  (return (ast.Global :names (list (map (lambda [x] x.name) args))
+                      **sexp.position-info)))
+
+(defmacro nonlocal-compile [sexp]
+  (= [_ *args] sexp.list)
+  (return (ast.Nonlocal :names (list (map (lambda [x] x.name) args))
+                        **sexp.position-info)))
+
+(defmacro class-compile [sexp :decorator-list None]
+  (def classdef-args-parse [args]
+    (= q (deque args))
+    (= bases [])
+    (= keywords [])
+    (while q
+      (if (isinstance (:= arg (q.popleft)) Keyword)
+          (keywords.append (ast.keyword :arg arg.name
+                                        :value (expr-compile (:= value (q.popleft)))
+                                        **(merge-position-infos arg.position-info value.position-info)))
+          (bases.append (expr-compile arg))))
+    (return [bases keywords]))
+  (= [_ clsname args *body] sexp.list)
+  (= [bases keywords] (classdef-args-parse args))
+  (return (ast.ClassDef
+            :name clsname.name
+            :bases bases
+            :keywords keywords
+            :body (macroexpand-then-compile body)
+            :decorator-list (ife decorator-list
+                                 (list (map expr-compile decorator-list))
+                                 [])
+            **sexp.position-info)))

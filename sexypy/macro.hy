@@ -1,7 +1,7 @@
 (require hyrule *)
 
 (import ast)
-
+(import collections [deque])
 (import functools [reduce])
 
 (import

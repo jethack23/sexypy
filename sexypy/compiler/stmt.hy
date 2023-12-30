@@ -59,45 +59,6 @@
                               module.position-info
                               names.position-info))))
 
-(defn global-compile [sexp]
-  (setv [_ #* args] sexp.list)
-  (ast.Global :names (list (map (fn [x] x.name) args))
-              #** sexp.position-info))
-
-(defn nonlocal-compile [sexp]
-  (setv [_ #* args] sexp.list)
-  (ast.Nonlocal :names (list (map (fn [x] x.name) args))
-                #** sexp.position-info))
-
-(defn classdef-p [sexp]
-  (= (str sexp.op) "class"))
-
-(defn classdef-args-parse [args]
-  (setv q (deque args)
-        bases []
-        keywords [])
-  (while q
-    (setv arg (q.popleft))
-    (if (keyword-arg-p arg)
-        (keywords.append (ast.keyword :arg arg.name
-                                      :value (expr-compile (q.popleft))
-                                      #** arg.position-info))
-        (bases.append (expr-compile arg))))
-  [bases keywords])
-
-(defn classdef-compile [sexp decorator-list]
-  (setv [_ clsname args #*body] sexp.list
-        [bases keywords] (classdef-args-parse args))
-  (ast.ClassDef
-    :name clsname.name
-    :bases bases
-    :keywords keywords
-    :body (stmt-list-compile body)
-    :decorator-list (if decorator-list
-                        (list (map expr-compile decorator-list))
-                        [])
-    #** sexp.position-info))
-
 (defn stmt-compile [sexp [decorator-list None]]
   (cond (isinstance sexp ast.AST) sexp
         (not (paren-p sexp)) (expr-wrapper sexp)
@@ -118,7 +79,7 @@
         ;; (return-p sexp) (return-compile sexp)
         (= (str sexp.op) "global") (global-compile sexp)
         (= (str sexp.op) "nonlocal") (nonlocal-compile sexp)
-        (classdef-p sexp) (classdef-compile sexp decorator-list)
+        ;; (classdef-p sexp) (classdef-compile sexp decorator-list)
         ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
         True (expr-wrapper sexp)))
 
