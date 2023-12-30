@@ -59,16 +59,6 @@
                               module.position-info
                               names.position-info))))
 
-(defn deco-p [sexp]
-  (= (str sexp.op) "deco"))
-
-(defn deco-compile [sexp decorator-list]
-  (setv [op decorator def-statement] sexp.list
-        new-deco-list (if (isinstance decorator Bracket)
-                          decorator.list
-                          [decorator]))
-  (stmt-compile def-statement (+ (if decorator-list decorator-list []) new-deco-list)))
-
 (defn global-compile [sexp]
   (setv [_ #* args] sexp.list)
   (ast.Global :names (list (map (fn [x] x.name) args))
@@ -123,7 +113,7 @@
         ;; for
         ;; break
         ;; continue
-        (deco-p sexp) (deco-compile sexp decorator-list)
+        ;; (deco-p sexp) (deco-compile sexp decorator-list)
         ;; (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         ;; (return-p sexp) (return-compile sexp)
         (= (str sexp.op) "global") (global-compile sexp)

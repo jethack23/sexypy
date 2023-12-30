@@ -1,8 +1,8 @@
 ;;; return redifinable here
-(defmacro return-compile [sexp]
-  (:= [_ value] sexp.list)
-  (return (ast.Return :value (expr-compile value)
-                      **sexp.position-info)))
+;; (defmacro return-compile [sexp]
+;;   (:= [_ value] sexp.list)
+;;   (return (ast.Return :value (expr-compile value)
+;;                       **sexp.position-info)))
 
 (defmacro =-compile [sexp]
   (:= [op *targets value] sexp.list)
@@ -59,3 +59,12 @@
                                  [])
             :returns (ife returns (expr-compile returns) None)
             **sexp.position-info)))
+
+(defmacro deco-compile [sexp :decorator-list None]
+  (= [op decorator def-statement] sexp.list)
+  (= new-deco-list (ife (isinstance decorator Bracket)
+                        decorator.list
+                        [decorator]))
+  (return `(def-compile
+             ~def-statement
+             ~(+ (ife decorator-list decorator-list []) new-deco-list))))
