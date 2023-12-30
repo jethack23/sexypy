@@ -166,7 +166,7 @@
   rst)
 
 (defn slice-p [sexp]
-  (= (str sexp.op) ":"))
+  (and (> (len sexp) 0) (= (str sexp.op) ":")))
 
 (defn slice-compile [sexp]
   (setv [_ #* args] sexp.list
