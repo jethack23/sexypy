@@ -4,7 +4,8 @@
 
 (import sexypy.parser [parse]
         sexypy.macro [macroexpand-then-compile]
-        sexypy.repl [ast-to-python])
+        sexypy.repl [ast-to-python
+                     load-macros])
 
 (defn src-to-python [src]
   (.join "\n" (map ast-to-python (-> src
@@ -12,6 +13,7 @@
                                      (macroexpand-then-compile)))))
 
 (defmain [_ file]
+  (load-macros)
   (with [g (open (.replace file ".hy" ".py") "w")]
     (with [f (open file "r")]
       (setv org (f.read))
@@ -21,7 +23,7 @@
         (lines.pop))
       (g.write "\n\n\n# translated from below s-expression\n\n")
       (g.write (.join "\n" (map (fn [x] (+ "# " x))
-                              lines)))))
+                                lines)))))
   (subprocess.run ["black" (.replace file ".hy" ".py")])
   (subprocess.run ["python" (.replace file ".hy" ".py")])
   )

@@ -5,9 +5,11 @@
 (import functools [reduce])
 
 (import
+  sexypy.utils *
   sexypy.nodes *
-  sexypy.compiler [def-args-parse
-                   stmt-list-compile])
+  sexypy.compiler [stmt-list-compile
+                   expr-compile
+                   def-args-parse])
 
 
 (setv __macro-namespace {})
@@ -15,11 +17,11 @@
 
 (defn define-macro [sexp]
   (setv [op macroname args #* body] sexp.list
-        new-name (+ "___macro___" macroname.value)
+        new-name (+ "___macro___" macroname.name)
         def-exp (ast.FunctionDef
                   :name new-name
                   :args (def-args-parse args)
-                  :body (stmt-list-compile body)
+                  :body (macroexpand-then-compile body)
                   :decorator-list []
                   :returns None
                   #** sexp.position-info)
@@ -44,7 +46,8 @@
   None)
 
 (defn macroexpand [sexp]
-  (if (not (isinstance sexp Paren))
+  (if (or (not (isinstance sexp Expression))
+          (< (len sexp) 1))
       sexp
       (do (setv [op #* operands] sexp.list)
           (cond
@@ -53,6 +56,10 @@
 
             (in (str op) __macro-namespace)
             (macroexpand ((get __macro-namespace (str op)) #* operands))
+
+            (in (+ (str op) "-compile") __macro-namespace)
+            (macroexpand ((get __macro-namespace (+ (str op) "-compile"))
+                           sexp))
 
             True
             (do (setv sexp.list (list (filter (fn [x] (not (is x None)))

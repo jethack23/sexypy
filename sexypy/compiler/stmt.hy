@@ -68,46 +68,6 @@
                               module.position-info
                               names.position-info))))
 
-(defn if-p [sexp]
-  (= (str sexp.op) "if"))
-
-(defn if-stmt-compile [sexp]
-  (setv [_ test then orelse]
-        (if (< (len sexp.list) 4)
-            [#* sexp.list None]
-            sexp.list))
-  (ast.If :test (expr-compile test)
-          :body (stmt-list-compile [then])
-          :orelse (if orelse (stmt-list-compile [orelse]) [])
-          #** sexp.position-info))
-
-(defn while-p [sexp]
-  (= (str sexp.op) "while"))
-
-(defn while-compile [sexp]
-  (setv [_ test then orelse]
-        (if (< (len sexp.list) 4)
-            [#* sexp.list None]
-            sexp.list))
-  (ast.While :test (expr-compile test)
-             :body (stmt-list-compile [then])
-             :orelse (if orelse (stmt-list-compile [orelse]) [])
-             #** sexp.position-info))
-
-(defn for-p [sexp]
-  (= (str sexp.op) "for"))
-
-(defn for-compile [sexp]
-  (setv [_ target iterable body orelse]
-        (if (< (len sexp.list) 5)
-            [#* sexp.list None]
-            sexp.list))
-  (ast.For :target (expr-compile target ast.Store)
-           :iter (expr-compile iterable)
-           :body (stmt-list-compile [body])
-           :orelse (if orelse (stmt-list-compile [orelse]) [])
-           #** sexp.position-info))
-
 (defn deco-p [sexp]
   (= (str sexp.op) "deco"))
 
@@ -184,19 +144,20 @@
     #** sexp.position-info))
 
 (defn stmt-compile [sexp [decorator-list None]]
-  (cond (not (paren-p sexp)) (expr-wrapper sexp)
+  (cond (isinstance sexp ast.AST) sexp
+        (not (paren-p sexp)) (expr-wrapper sexp)
         (do-p sexp) (do-compile sexp)
-        (assign-p sexp) (assign-compile sexp)
+        ;; (assign-p sexp) (assign-compile sexp)
         (augassign-p sexp) (augassign-compile sexp)
         (= (str sexp.op) "del") (del-compile sexp)
         (= (str sexp.op) "pass") (ast.Pass #** sexp.position-info)
         (= (str sexp.op) "import") (import-compile sexp)
         (= (str sexp.op) "from") (importfrom-compile sexp)
-        (if-p sexp) (if-stmt-compile sexp)
-        (while-p sexp) (while-compile sexp)
-        (for-p sexp) (for-compile sexp)
-        (= (str sexp.op) "break") (ast.Break #** sexp.position-info)
-        (= (str sexp.op) "continue") (ast.Continue #** sexp.position-info)
+        ;; (if-p sexp) (if-stmt-compile sexp)
+        ;; while
+        ;; for
+        ;; break
+        ;; continue
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)

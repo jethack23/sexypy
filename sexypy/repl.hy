@@ -6,10 +6,19 @@
 (import sexypy.compiler *)
 (import sexypy.macro [macroexpand-then-compile])
 
+(defn load-macros []
+  (with [f (open "sexypy/macros.sy" "r")]
+    (-> (f.read)
+        (parse)
+        (macroexpand-then-compile)
+        ((fn [x] (for [st x]
+                   (eval (compile (ast.Interactive :body [st]) "macro-loading" "single"))))))))
+
 (defn ast-to-python [st]
   (str (ast.unparse st)))
 
 (when (= __name__ "__main__")
+  (load-macros)
   (defn eval-translate-print [stl]
     (print "\npython translation")
     (print (.join "\n" (list (map ast-to-python stl))))

@@ -261,7 +261,8 @@
         (raise (ValueError "'unquote' is not allowed here"))))
 
 (defn expr-compile [sexp [ctx ast.Load]]
-  (cond (paren-p sexp) (paren-compiler sexp ctx)
+  (cond (isinstance sexp ast.AST) ast.AST
+        (paren-p sexp) (paren-compiler sexp ctx)
         (bracket-p sexp) (bracket-compiler sexp ctx)
         (brace-p sexp) (brace-compiler sexp)
         (starred-p sexp) (starred-compile sexp ctx)
