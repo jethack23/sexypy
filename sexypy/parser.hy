@@ -121,6 +121,9 @@
   (cond (in token augassignop-dict)
         (Symbol token #** position-info)
 
+        (and (> (len token) 1) (= (get token 0) ":"))
+        (keyword-token-parse token tktype position-info)
+
         (and (> (len token) 1) (= (get token 0) "*"))
         (star-token-parse token tktype position-info)
 
@@ -135,6 +138,14 @@
         (string-parse token tktype position-info)
 
         True (Symbol token #** position-info)))
+
+(defn keyword-token-parse [token tktype position-info]
+  (setv inner-position {#** position-info})
+  (+= (get inner-position "col_offset") 1)
+  (Keyword (token-parse (cut token 1 None)
+                        tktype
+                        inner-position)
+           #** position-info))
 
 (defn star-token-parse [token tktype position-info]
   (setv num-star (if (= (get token 1) "*") 2 1)

@@ -114,6 +114,32 @@
 (def-exp-by-type Bracket)
 (def-exp-by-type Brace)
 
+(defclass Keyword [Node]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super) #** kwargs)
+    (setv self.value value
+          self.classname "Keyword")
+    None)
+
+  (defn src-operands-generate [self in-quasi position-info given-indent]
+    (self.value.src-to-generate in-quasi position-info given-indent))
+
+  (defn __repr__ [self]
+    (+ "Kwd("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ ":"
+       (str self.value)))
+
+  (defn [property] name [self]
+    self.value.name)
+
+  (defn update-dict [self key value]
+    (setv (get self.__dict__ key) value)
+    (.update-dict self.value value)))
+
 (defclass Starred [Node]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)

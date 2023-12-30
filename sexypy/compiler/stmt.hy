@@ -164,7 +164,7 @@
   (while q
     (setv arg (q.popleft))
     (if (keyword-arg-p arg)
-        (keywords.append (ast.keyword :arg (get arg.name (slice 1 None))
+        (keywords.append (ast.keyword :arg arg.name
                                       :value (expr-compile (q.popleft))
                                       #** arg.position-info))
         (bases.append (expr-compile arg))))
