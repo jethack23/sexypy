@@ -18,15 +18,6 @@
   (setv [op #* sexps] sexp.list)
   (stmt-list-compile sexps))
 
-(defn assign-p [sexp]
-  (= (str sexp.op) "="))
-
-(defn assign-compile [sexp]
-  (setv [op #* targets value] sexp.list)
-  (ast.Assign :targets (list (map (fn [x] (expr-compile x :ctx ast.Store)) targets))
-              :value (expr-compile value)
-              #** sexp.position-info))
-
 (defn augassign-p [sexp]
   (in (str sexp.op) augassignop-dict))
 
@@ -77,24 +68,6 @@
                           decorator.list
                           [decorator]))
   (stmt-compile def-statement (+ (if decorator-list decorator-list []) new-deco-list)))
-
-(defn functiondef-p [sexp]
-  (= (str sexp.op) "def"))
-
-(defn functiondef-compile [sexp decorator-list]
-  (setv [op fnname args #* body] sexp.list)
-  (if (and body (= (get body 0) ":->"))
-      (setv [_ returns #* body] body)
-      (setv returns None))
-  (ast.FunctionDef
-    :name fnname.name
-    :args (def-args-parse args)
-    :body (stmt-list-compile body)
-    :decorator-list (if decorator-list
-                        (list (map expr-compile decorator-list))
-                        [])
-    :returns (if returns (expr-compile returns) None)
-    #** sexp.position-info))
 
 (defn return-p [sexp]
   (= (str sexp.op) "return"))
@@ -159,7 +132,7 @@
         ;; break
         ;; continue
         (deco-p sexp) (deco-compile sexp decorator-list)
-        (functiondef-p sexp) (functiondef-compile sexp decorator-list)
+        ;; (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
         (= (str sexp.op) "global") (global-compile sexp)
         (= (str sexp.op) "nonlocal") (nonlocal-compile sexp)

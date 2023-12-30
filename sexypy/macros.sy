@@ -38,3 +38,18 @@
 
 (defmacro continue-compile [sexp]
   (return (ast.Continue **sexp.position-info)))
+
+(defmacro def-compile [sexp :decorator-list None]
+  (= [_ fnname args *body] sexp.list)
+  (if (and body (== (sub body 0) ":->"))
+      (= [_ returns *body] body)
+      (= returns None))
+  (return (ast.FunctionDef
+            :name fnname.name
+            :args (def-args-parse args)
+            :body (macroexpand-then-compile body)
+            :decorator-list (ife decorator-list
+                                 (list (map expr-compile decorator-list))
+                                 [])
+            :returns (ife returns (expr-compile returns) None)
+            **sexp.position-info)))
