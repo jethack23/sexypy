@@ -7,6 +7,7 @@
 (import
   sexypy.utils *
   sexypy.nodes *
+  sexypy.parser [parse]
   sexypy.compiler [expr-compile
                    def-args-parse])
 
@@ -95,3 +96,16 @@
                                                             [y])))
                                      (map macroexpand sexp-list)
                                      []))))
+
+(defn load-macros []
+  (with [f (open "sexypy/macros.sy" "r")]
+    (->> (f.read)
+         (parse)
+         (map macroexpand)
+         (filter (fn [x] x))
+         ((fn [x] (for [st x]
+                    (eval (compile (ast.Interactive :body [st]) "macro-loading" "single"))))))))
+
+(load-macros)
+
+
