@@ -4,12 +4,57 @@
 ;;   (return (ast.Return :value (expr-compile value)
 ;;                       **sexp.position-info)))
 
+(defmacro do-compile [sexp]
+  (:= [_ *sexps] sexp.list)
+  (return (macroexpand-then-compile sexps)))
+
 (defmacro =-compile [sexp]
   (:= [op *targets value] sexp.list)
   (return (ast.Assign
             :targets (list (map (lambda [x] (expr-compile x :ctx ast.Store)) targets))
             :value (expr-compile value)
             **sexp.position-info)))
+
+(defmacro del-compile [sexp]
+  (= [_ *args] sexp.list)
+  (return (ast.Delete
+            :targets (list (map (lambda [x] (expr-compile x ast.Del))
+                                args))
+            **sexp.position-info)))
+
+(defmacro pass-compile [sexp]
+  (return (ast.Pass **sexp.position-info)))
+
+(defmacro import-compile [sexp]
+  (= [_ *names] sexp.list)
+  (return (ast.Import
+            :names (list (map (lambda [x] (ast.alias x.name
+                                                     **x.position-info))
+                              names))
+            **sexp.position-info)))
+
+(defmacro from-compile [sexp]
+  (= [_ *args] sexp.list)
+  (= modules (sub args [: _ _ 2]))
+  (= namess (sub args [: 1 _ 2]))
+  (return
+    (list
+      (map
+        (lambda
+          [pair]
+          ((lambda
+             [m ns]
+             (ast.ImportFrom
+               :module m.name
+               :names (list (map (lambda [x] (ast.alias
+                                               x.name
+                                               **x.position-info))
+                                 ns.list))
+               **(merge-position-infos
+                   m.position-info
+                   ns.position-info)))
+            *pair))
+        (zip modules namess)))))
 
 (defmacro if-compile [sexp]
   (= [_ test then orelse] (ife (< (len sexp.list) 4)
@@ -68,6 +113,37 @@
   (return `(def-compile
              ~def-statement
              ~(+ (ife decorator-list decorator-list []) new-deco-list))))
+
+(do (defmacro augassign-generator []
+      (= augassignop-dict {"+=" 'ast.Add
+                           "-=" 'ast.Sub
+                           "*=" 'ast.Mult
+                           "/=" 'ast.Div
+                           "//=" 'ast.FloorDiv
+                           "%=" 'ast.Mod
+                           "**=" 'ast.Pow
+                           "<<=" 'ast.LShift
+                           ">>=" 'ast.RShift
+                           "|=" 'ast.BitOr
+                           "^=" 'ast.BitXor
+                           "&=" 'ast.BitAnd
+                           "@=" 'ast.MatMult})
+      (def augassign-compile [opname astop]
+        (return `(defmacro ~(Symbol (+ opname "-compile")) [sexp]
+                   (= [op target *args] sexp.list)
+                   (= value (reduce (lambda [x y] (ast.Binop x (~astop) y
+                                                             **(merge-position-infos
+                                                                 op.position-info
+                                                                 y.position-info)))
+                                    (map expr-compile args)))
+                   (return (ast.AugAssign :target (expr-compile target ast.Store)
+                                          :op (~astop)
+                                          :value value
+                                          **sexp.position-info)))))
+
+      (return `(do ~@(map (lambda [x] (augassign-compile *x))
+                          (augassignop-dict.items)))))
+    (augassign-generator))
 
 (defmacro global-compile [sexp]
   (= [_ *args] sexp.list)

@@ -47,7 +47,7 @@
   (eval (compile (ast.Interactive :body [def-exp assign-exp])
                  "macro-defining"
                  "single"))
-  (print "# macro defined: " new-name)
+  (print "# macro defined:" (macroname.value.replace "-compile" "") "/" new-name)
   None)
 
 (defn macroexpand [sexp]
@@ -74,4 +74,8 @@
 
 (defn macroexpand-then-compile [sexp-list]
   (stmt-list-compile (filter (fn [x] (not (is x None)))
-                             (map macroexpand sexp-list))))
+                             (reduce (fn [rst y] (+ rst (if (isinstance y list)
+                                                            y
+                                                            [y])))
+                                     (map macroexpand sexp-list)
+                                     []))))
