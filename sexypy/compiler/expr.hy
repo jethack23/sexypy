@@ -174,15 +174,18 @@
         args-dict {})
   (when args
     (setv lower (args.popleft))
-    (when (!= lower "None")
+    (when (and (!= lower "None")
+               (!= lower "_"))
       (setv (get args-dict "lower") (expr-compile lower))))
   (when args
     (setv upper (args.popleft))
-    (when (!= upper "None")
+    (when (and (!= upper "None")
+               (!= upper "_"))
       (setv (get args-dict "upper") (expr-compile upper))))
   (when args
     (setv step (args.popleft))
-    (when (!= step "None")
+    (when (and (!= step "None")
+               (!= step "_"))
       (setv (get args-dict "step") (expr-compile step))))
 
   (ast.Slice #** args-dict
