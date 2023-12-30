@@ -1,19 +1,44 @@
-;;; return redifinable here
-;; (defmacro return-compile [sexp]
-;;   (:= [_ value] sexp.list)
-;;   (return (ast.Return :value (expr-compile value)
-;;                       **sexp.position-info)))
-
-(defmacro do-compile [sexp]
-  (:= [_ *sexps] sexp.list)
-  (return (macroexpand-then-compile sexps)))
+;; return redifinable here
+(defmacro return-compile [sexp]
+  (:= value (sub sexp.list 1))
+  (return (ast.Return :value (expr-compile value)
+                      **sexp.position-info)))
 
 (defmacro =-compile [sexp]
-  (:= [op *targets value] sexp.list)
+  (:= targets sexp.operands)
+  (:= value (targets.pop))
   (return (ast.Assign
             :targets (list (map (lambda [x] (expr-compile x :ctx ast.Store)) targets))
             :value (expr-compile value)
             **sexp.position-info)))
+
+(defmacro if-compile [sexp]
+  (= [_ test then orelse] (ife (< (len sexp.list) 4)
+                               [*sexp.list None]
+                               sexp.list))
+  (return (ast.If :test (expr-compile test)
+                  :body (macroexpand-then-compile [then])
+                  :orelse (macroexpand-then-compile [orelse])
+                  **sexp.position-info)))
+
+(defmacro def-compile [sexp :decorator-list None]
+  (= [_ fnname args *body] sexp.list)
+  (if (and body (== (sub body 0) ":->"))
+      (= [_ returns *body] body)
+      (= returns None))
+  (return (ast.FunctionDef
+            :name fnname.name
+            :args (def-args-parse args)
+            :body (macroexpand-then-compile body)
+            :decorator-list (ife decorator-list
+                                 (list (map expr-compile decorator-list))
+                                 [])
+            :returns (ife returns (expr-compile returns) None)
+            **sexp.position-info)))
+
+(defmacro do-compile [sexp]
+  (= [_ *sexps] sexp.list)
+  (return (macroexpand-then-compile sexps)))
 
 (defmacro del-compile [sexp]
   (= [_ *args] sexp.list)
@@ -56,15 +81,6 @@
             *pair))
         (zip modules namess)))))
 
-(defmacro if-compile [sexp]
-  (= [_ test then orelse] (ife (< (len sexp.list) 4)
-                               [*sexp.list None]
-                               sexp.list))
-  (return (ast.If :test (expr-compile test)
-                  :body (macroexpand-then-compile [then])
-                  :orelse (macroexpand-then-compile [orelse])
-                  **sexp.position-info)))
-
 (defmacro while-compile [sexp]
   (= [_ test then orelse] (ife (< (len sexp.list) 4)
                                [*sexp.list None]
@@ -89,21 +105,6 @@
 
 (defmacro continue-compile [sexp]
   (return (ast.Continue **sexp.position-info)))
-
-(defmacro def-compile [sexp :decorator-list None]
-  (= [_ fnname args *body] sexp.list)
-  (if (and body (== (sub body 0) ":->"))
-      (= [_ returns *body] body)
-      (= returns None))
-  (return (ast.FunctionDef
-            :name fnname.name
-            :args (def-args-parse args)
-            :body (macroexpand-then-compile body)
-            :decorator-list (ife decorator-list
-                                 (list (map expr-compile decorator-list))
-                                 [])
-            :returns (ife returns (expr-compile returns) None)
-            **sexp.position-info)))
 
 (defmacro deco-compile [sexp :decorator-list None]
   (= [op decorator def-statement] sexp.list)
