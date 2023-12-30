@@ -62,24 +62,19 @@
   (= [_ *args] sexp.list)
   (= modules (sub args [: _ _ 2]))
   (= namess (sub args [: 1 _ 2]))
+  (def single-from [pair]
+    (= [module names] pair)
+    (return (ast.ImportFrom
+              :module module.name
+              :names (list (map (lambda [x] (ast.alias
+                                              x.name
+                                              **x.position-info))
+                                names.list))
+              **(merge-position-infos
+                  module.position-info
+                  names.position-info))))
   (return
-    (list
-      (map
-        (lambda
-          [pair]
-          ((lambda
-             [m ns]
-             (ast.ImportFrom
-               :module m.name
-               :names (list (map (lambda [x] (ast.alias
-                                               x.name
-                                               **x.position-info))
-                                 ns.list))
-               **(merge-position-infos
-                   m.position-info
-                   ns.position-info)))
-            *pair))
-        (zip modules namess)))))
+    (list (map single-from (zip modules namess)))))
 
 (defmacro while-compile [sexp]
   (= [_ test then orelse] (ife (< (len sexp.list) 4)
