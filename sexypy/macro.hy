@@ -11,8 +11,13 @@
                    expr-compile
                    def-args-parse])
 
+(defn return-compile [sexp]
+  (setv [_ value] sexp.list)
+  (ast.Return :value (expr-compile value)
+              #** sexp.position-info))
+(print "# return-compile macro must be built-in to define other macros.")
 
-(setv __macro-namespace {})
+(setv __macro-namespace {"return-compile" return-compile})
 
 
 (defn define-macro [sexp]

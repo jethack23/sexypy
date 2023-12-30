@@ -1,3 +1,9 @@
+;;; return redifinable here
+(defmacro return-compile [sexp]
+  (:= [_ value] sexp.list)
+  (return (ast.Return :value (expr-compile value)
+                      **sexp.position-info)))
+
 (defmacro =-compile [sexp]
   (:= [op *targets value] sexp.list)
   (return (ast.Assign
