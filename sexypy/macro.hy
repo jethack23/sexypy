@@ -8,11 +8,11 @@
   sexypy.nodes *
   sexypy.parser [parse]
   sexypy.compiler [stmt-list-compile
-                   expr-compile
-                   single-parse])
+                   expr-compile])
 
 
 (setv __macro-namespace {})
+
 
 (defn define-macro [sexp]
   (setv [op macroname args #* body] sexp.list
@@ -22,11 +22,12 @@
                       args
                       #* body
                       #** sexp.position-info)
-               (single-parse (+ "(= (sub __macro-namespace \""
-                                macroname.value
-                                "\") "
-                                new-name
-                                ")"))])
+               (get (parse (+ "(= (sub __macro-namespace \""
+                              macroname.value
+                              "\") "
+                              new-name
+                              ")"))
+                    0)])
   (eval (compile (ast.Interactive :body (stmt-list-compile sexps))
                  "macro-defining"
                  "single"))
