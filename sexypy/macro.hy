@@ -6,9 +6,8 @@
 
 (import
   sexypy.nodes *
-  sexypy.parser [parse]
-  sexypy.compiler [stmt-list-compile
-                   expr-compile])
+  sexypy.compiler [def-args-parse
+                   stmt-list-compile])
 
 
 (setv __macro-namespace {})
@@ -17,18 +16,28 @@
 (defn define-macro [sexp]
   (setv [op macroname args #* body] sexp.list
         new-name (+ "___macro___" macroname.value)
-        sexps [(Paren (Symbol "def" #** op.position-info)
-                      (Symbol new-name #** macroname.position-info)
-                      args
-                      #* body
-                      #** sexp.position-info)
-               (get (parse (+ "(= (sub __macro-namespace \""
-                              macroname.value
-                              "\") "
-                              new-name
-                              ")"))
-                    0)])
-  (eval (compile (ast.Interactive :body (stmt-list-compile sexps))
+        def-exp (ast.FunctionDef
+                  :name new-name
+                  :args (def-args-parse args)
+                  :body (stmt-list-compile body)
+                  :decorator-list []
+                  :returns None
+                  #** sexp.position-info)
+        assign-exp (ast.Assign
+                     :targets
+                     [(ast.Subscript
+                        :value (ast.Name :id "__macro_namespace"
+                                         :ctx (ast.Load)
+                                         #** sexp.position-info)
+                        :slice (ast.Constant :value macroname.value
+                                             #** sexp.position-info)
+                        :ctx (ast.Store)
+                        #** sexp.position-info)]
+                     :value (ast.Name :id new-name
+                                      :ctx (ast.Load)
+                                      #** sexp.position-info)
+                     #** sexp.position-info))
+  (eval (compile (ast.Interactive :body [def-exp assign-exp])
                  "macro-defining"
                  "single"))
   (print "# macro defined: " new-name)
