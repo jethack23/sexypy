@@ -4,8 +4,21 @@
   (return (ast.Return :value (expr-compile value)
                       **sexp.position-info)))
 
+(defmacro compile-macroexpand-then-compile [sexp-list]
+  (return `(list (map (lambda [sexp] (ife (isinstance sexp ast.AST)
+                                          sexp
+                                          (ast.Expr :value (expr-compile sexp)
+                                                    **sexp.position-info)))
+                      (filter (lambda [x] (not (is x None)))
+                              (reduce (lambda [rst y] (+ rst
+                                                         (ife (isinstance y list)
+                                                              y
+                                                              [y])))
+                                      (map compile-macroexpand ~sexp-list)
+                                      []))))))
+
 (defmacro =-compile [sexp]
-  (:= targets sexp.operands)
+  (:= targets (list (map compile-macroexpand sexp.operands)))
   (:= value (targets.pop))
   (return (ast.Assign
             :targets (list (map (lambda [x] (expr-compile x :ctx ast.Store)) targets))
@@ -16,9 +29,11 @@
   (= [_ test then orelse] (ife (< (len sexp.list) 4)
                                [*sexp.list None]
                                sexp.list))
+  (= body (compile-macroexpand-then-compile [then]))
+  (= orelse (compile-macroexpand-then-compile [orelse]))
   (return (ast.If :test (expr-compile test)
-                  :body (macroexpand-then-compile [then])
-                  :orelse (macroexpand-then-compile [orelse])
+                  :body body
+                  :orelse orelse
                   **sexp.position-info)))
 
 (defmacro def-compile [sexp :decorator-list None]
@@ -26,10 +41,11 @@
   (if (and body (== (sub body 0) ":->"))
       (= [_ returns *body] body)
       (= returns None))
+  (= body (compile-macroexpand-then-compile body))
   (return (ast.FunctionDef
             :name fnname.name
             :args (def-args-parse args)
-            :body (macroexpand-then-compile body)
+            :body body
             :decorator-list (ife decorator-list
                                  (list (map expr-compile decorator-list))
                                  [])
@@ -38,7 +54,8 @@
 
 (defmacro do-compile [sexp]
   (= [_ *sexps] sexp.list)
-  (return (macroexpand-then-compile sexps)))
+  (= rst (compile-macroexpand-then-compile sexps))
+  (return rst))
 
 (defmacro del-compile [sexp]
   (= [_ *args] sexp.list)
@@ -73,26 +90,29 @@
               **(merge-position-infos
                   module.position-info
                   names.position-info))))
-  (return
-    (list (map single-from (zip modules namess)))))
+  (return (list (map single-from (zip modules namess)))))
 
 (defmacro while-compile [sexp]
   (= [_ test then orelse] (ife (< (len sexp.list) 4)
                                [*sexp.list None]
                                sexp.list))
+  (= body (compile-macroexpand-then-compile [then]))
+  (= orelse (compile-macroexpand-then-compile [orelse]))
   (return (ast.While :test (expr-compile test)
-                     :body (macroexpand-then-compile [then])
-                     :orelse (macroexpand-then-compile [orelse])
+                     :body body
+                     :orelse orelse
                      **sexp.position-info)))
 
 (defmacro for-compile [sexp]
   (= [_ target iterable body orelse] (ife (< (len sexp.list) 5)
                                           [*sexp.list None]
                                           sexp.list))
+  (= body (compile-macroexpand-then-compile [body]))
+  (= orelse (compile-macroexpand-then-compile [orelse]))
   (return (ast.For :target (expr-compile target ast.Store)
                    :iter (expr-compile iterable)
-                   :body (macroexpand-then-compile [body])
-                   :orelse (macroexpand-then-compile [orelse])
+                   :body body
+                   :orelse orelse
                    **sexp.position-info)))
 
 (defmacro break-compile [sexp]
@@ -165,12 +185,14 @@
     (return [bases keywords]))
   (= [_ clsname args *body] sexp.list)
   (= [bases keywords] (classdef-args-parse args))
+  (= body (compile-macroexpand-then-compile body))
   (return (ast.ClassDef
             :name clsname.name
             :bases bases
             :keywords keywords
-            :body (macroexpand-then-compile body)
+            :body body
             :decorator-list (ife decorator-list
                                  (list (map expr-compile decorator-list))
                                  [])
             **sexp.position-info)))
+

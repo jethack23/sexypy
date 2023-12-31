@@ -4,7 +4,7 @@
 
 (import sexypy.parser *)
 (import sexypy.compiler *)
-(import sexypy.macro [macroexpand-then-compile])
+(import sexypy.macro [macroexpand])
 
 (defn ast-to-python [st]
   (str (ast.unparse st)))
@@ -22,7 +22,12 @@
       (setv line (input "")))
     (setv parsed (parse src))
     ;; (print (.join "\n" (map str parsed)))
-    (setv stl (macroexpand-then-compile parsed))
+    (setv stl (list (map (fn [x] (if (isinstance x ast.AST) x (ast.Expr (expr-compile x) #** x.position-info)))
+                         (reduce (fn [rst y] (+ rst (if (isinstance y list)
+                                                         y
+                                                         [y])))
+                                 (map macroexpand parsed)
+                                 []))))
     ;; (print parsed)
     (eval-translate-print stl)
     (for [st stl]
