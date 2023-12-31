@@ -2,6 +2,10 @@
 
 (defclass Node []
   (defn __init__ [self #* args #** kwargs]
+    (setv self.lineno 0
+          self.col-offset 0
+          self.end-lineno 0
+          self.end-col-offset 0)
     (for [[k v] (kwargs.items)]
       (setv (get self.__dict__ k) v)))
 
@@ -14,39 +18,13 @@
      "col_offset" self.col-offset
      "end_col_offset" self.end-col-offset})
 
-  (defn indent [self given-indent]
-    (+ (* " " (+ 2 (len self.classname))) given-indent))
+  (defn _generator-expression [self in-quasi]
+    (Paren (Symbol self.classname #** self.position-info)
+           (self.operands-generate in-quasi)
+           #** self.position-info))
 
-  (defn position-info-generate [self given-indent]
-    (+ "\n"
-       (self.indent given-indent)
-       "**{\"lineno\" "
-       (str self.lineno)
-       " \"col_offset\" "
-       (str self.col-offset)
-       " \"end_lineno\" "
-       (str self.end-lineno)
-       " \"end_col_offset\" "
-       (str self.end-col-offset)
-       "}"))
-
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (+ "\""
-       self.value
-       "\""))
-
-  (defn _src-to-generate
-    [self in-quasi position-info given-indent]
-    (+ "("
-       self.classname
-       " "
-       (self.src-operands-generate in-quasi position-info given-indent)
-       (if position-info (self.position-info-generate given-indent) "")
-       ")"))
-
-  (defn src-to-generate
-    [self [in-quasi False] [position-info True] [given-indent ""]]
-    (self._src-to-generate in-quasi position-info given-indent))
+  (defn generator-expression [self [in-quasi False]]
+    (self._generator-expression in-quasi))
 
   (defn __eq__ [self other]
     (= (str self) other)))
@@ -60,10 +38,13 @@
   (defn append [self t]
     (.append self.list t))
 
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (.join (+ "\n" (self.indent given-indent))
-           (list (map (fn [x] (x.src-to-generate in-quasi position-info (self.indent given-indent)))
-                      self.list))))
+  (defn operands-generate [self in-quasi]
+    (lfor sexp self.list (sexp.generator-expression in-quasi)))
+
+  (defn generator-expression [self [in-quasi False]]
+    (Paren (Symbol self.classname #** self.position-info)
+           #* (self.operands-generate in-quasi)
+           #** self.position-info))
 
   (defn __repr__ [self [depth 0]]
     (+ "Expr("
@@ -114,15 +95,17 @@
 (def-exp-by-type Bracket)
 (def-exp-by-type Brace)
 
-(defclass Keyword [Node]
+(defclass Wrapper [Node]
+
+  (defn operands-generate [self in-quasi]
+    (self.value.generator-expression in-quasi)))
+
+(defclass Keyword [Wrapper]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
     (setv self.value value
           self.classname "Keyword")
     None)
-
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (self.value.src-to-generate in-quasi position-info given-indent))
 
   (defn __repr__ [self]
     (+ "Kwd("
@@ -140,15 +123,12 @@
     (setv (get self.__dict__ key) value)
     (.update-dict self.value value)))
 
-(defclass Starred [Node]
+(defclass Starred [Wrapper]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
     (setv self.value value
           self.classname "Starred")
     None)
-
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (self.value.src-to-generate in-quasi position-info given-indent))
 
   (defn __repr__ [self]
     (+ "Star("
@@ -166,15 +146,12 @@
     (setv (get self.__dict__ key) value)
     (.update-dict self.value key value)))
 
-(defclass DoubleStarred [Node]
+(defclass DoubleStarred [Wrapper]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
     (setv self.value value
           self.classname "DoubleStarred")
     None)
-
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (self.value.src-to-generate in-quasi position-info given-indent))
 
   (defn __repr__ [self]
     (+ "DStar("
@@ -192,7 +169,14 @@
     (setv (get self.__dict__ key) value)
     (.update-dict self.value key value)))
 
-(defclass Symbol [Node]
+(defclass Literal [Node]
+  (defn operands-generate [self in-quasi]
+    (String (+ "\""
+               self.value
+               "\"")
+            #** self.position-info)))
+
+(defclass Symbol [Literal]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
     (setv self.value value
@@ -210,19 +194,20 @@
   (defn __str__ [self]
     self.value))
 
-(defclass String [Node]
+(defclass String [Literal]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
     (setv self.value value
           self.classname "String")
     None)
 
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (+ "\""
-       (-> self.value
-           (.replace "\\" r"\\")
-           (.replace "\"" r"\""))
-       "\""))
+  (defn operands-generate [self in-quasi]
+    (String (+ "\""
+               (-> self.value
+                   (.replace "\\" r"\\")
+                   (.replace "\"" r"\""))
+               "\"")
+            #** self.position-info))
 
   (defn __repr__ [self]
     (+ "Str("
@@ -232,7 +217,7 @@
   (defn __str__ [self]
     self.value))
 
-(defclass Constant [Node]
+(defclass Constant [Literal]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
     (setv self.value value
@@ -253,10 +238,8 @@
     (setv self.value value)
     None)
 
-  (defn src-operands-generate [self in-quasi position-info given-indent]
-    (self.value.src-to-generate (isinstance self QuasiQuote)
-                                position-info
-                                (self.indent given-indent))))
+  (defn operands-generate [self in-quasi]
+    (self.value.operands-generate (isinstance self QuasiQuote))))
 
 (defclass Quote [MetaIndicator]
   (defn __init__ [self value #** kwargs]
@@ -294,11 +277,10 @@
     (setv self.classname "Unquote")
     None)
 
-  (defn src-to-generate
-    [self [in-quasi False] [position-info True] [given-indent ""]]
+  (defn generator-expression [self [in-quasi False]]
     (if in-quasi
-        (+ (if (isinstance self UnquoteSplice) "*" "") (str self.value))
-        (self._src-to-generate False position-info given-indent)))
+        self.value
+        (self._generator-expression False)))
 
   (defn __repr__ [self]
     (+ "Unquote("
@@ -314,6 +296,12 @@
     (.__init__ (super) value #** kwargs)
     (setv self.classname "UnquoteSplice")
     None)
+
+  (defn generator-expression [self [in-quasi False]]
+    (if in-quasi
+        (Starred self.value
+                 #** self.position-info)
+        (self._generator-expression False)))
 
   (defn __repr__ [self]
     (+ "UnquoteSplice("
