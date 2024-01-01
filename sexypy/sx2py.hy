@@ -1,5 +1,7 @@
 (require hyrule *)
 
+(import os)
+(import os.path :as osp)
 (import subprocess)
 
 (import sexypy.parser [parse]
@@ -12,7 +14,9 @@
                                      (macroexpand-then-compile)))))
 
 (defmain [_ file]
-  (with [g (open (.replace file ".hy" ".py") "w")]
+  (setv file (osp.join (os.getcwd) file)
+        newfile (+ (get (osp.splitext file) 0) ".py"))
+  (with [g (open newfile "w")]
     (with [f (open file "r")]
       (setv org (f.read))
       (g.write (src-to-python org))
@@ -22,6 +26,5 @@
       (g.write "\n\n\n# translated from below s-expression\n\n")
       (g.write (.join "\n" (map (fn [x] (+ "# " x))
                               lines)))))
-  (subprocess.run ["black" (.replace file ".hy" ".py")])
-  (subprocess.run ["python" (.replace file ".hy" ".py")])
-  )
+  (subprocess.run ["black" newfile])
+  (subprocess.run ["python" newfile]))
