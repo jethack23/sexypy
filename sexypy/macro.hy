@@ -19,7 +19,7 @@
         def-exp (ast.FunctionDef
                   :name new-name
                   :args (def-args-parse args)
-                  :body (stmt-list-compile body)
+                  :body (macroexpand-then-compile body)
                   :decorator-list []
                   :returns None
                   #** sexp.position-info)
@@ -44,20 +44,25 @@
   None)
 
 (defn macroexpand [sexp]
-  (if (not (isinstance sexp Paren))
-      sexp
-      (do (setv [op #* operands] sexp.list)
-          (cond
-            (= (str op) "defmacro")
-            (define-macro sexp)
+  (cond (or (isinstance sexp Wrapper)
+            (isinstance sexp MetaIndicator))
+        (do (setv sexp.value (macroexpand sexp.value))
+            sexp)
+        
+        (and (isinstance sexp Expression) (> (len sexp) 0))
+        (do (setv [op #* operands] sexp.list)
+            (cond
+              (= (str op) "defmacro")
+              (define-macro sexp)
 
-            (in (str op) __macro-namespace)
-            (macroexpand ((get __macro-namespace (str op)) #* operands))
+              (in (str op) __macro-namespace)
+              (macroexpand ((get __macro-namespace (str op)) #* operands))
 
-            True
-            (do (setv sexp.list (list (filter (fn [x] (not (is x None)))
-                                              (map macroexpand sexp.list))))
-                sexp)))))
+              True
+              (do (setv sexp.list (list (filter (fn [x] (not (is x None)))
+                                                (map macroexpand sexp.list))))
+                  sexp)))
+        True sexp))
 
 
 (defn macroexpand-then-compile [sexp-list]
