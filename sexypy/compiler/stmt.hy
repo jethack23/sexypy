@@ -48,24 +48,38 @@
                         args))
     #** sexp.position-info))
 
+(defn parse-names [names]
+  (setv rst []
+        q (deque names))
+  (while q
+    (setv n (q.popleft))
+    (if (= n ":as")
+        (setv (. (get rst -1) asname) (str (q.popleft)))
+        (rst.append (ast.alias :name (str n) #** n.position-info))))
+  rst)
+
 (defn import-compile [sexp]
   (setv [_ #* names] sexp.list)
-  (ast.Import :names (list (map (fn [x] (ast.alias x.name
-                                                   #** x.position-info))
-                                names))
+  (ast.Import :names (parse-names names)
               #** sexp.position-info))
 
 (defn importfrom-compile [sexp]
   (setv [_ #* args] sexp.list
         modules (cut args None None 2)
-        namess (cut args 1 None 2))
-  (lfor [module names] (zip modules namess)
-        (ast.ImportFrom :module module.name
-                        :names (list (map (fn [x] (ast.alias x.name
-                                                             #** x.position-info))
-                                          names.list))
+        namess (cut args 1 None 2)
+        module-level (map (fn [module]
+                            (setv i 0
+                                  x module.name)
+                            (while (= (get x i) ".")
+                              (+= i 1))
+                            [(cut x i None) i module.position-info])
+                          modules))
+  (lfor [[module level module-pos-info] names] (zip module-level namess)
+        (ast.ImportFrom :module module
+                        :names (parse-names names)
+                        :level level
                         #** (merge-position-infos
-                              module.position-info
+                              module-pos-info
                               names.position-info))))
 
 (defn if-p [sexp]
