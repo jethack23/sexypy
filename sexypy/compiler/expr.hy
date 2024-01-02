@@ -165,31 +165,21 @@
         rst.ctx (ctx))
   rst)
 
-(defn slice-p [sexp]
-  (and (> (len sexp) 0) (= (str sexp.op) ":")))
-
-(defn slice-compile [sexp]
-  (setv [_ #* args] sexp.list
-        args (deque args)
-        args-dict {})
-  (when args
-    (setv lower (args.popleft))
-    (when (and (!= lower "None")
-               (!= lower "_"))
-      (setv (get args-dict "lower") (expr-compile lower))))
-  (when args
-    (setv upper (args.popleft))
-    (when (and (!= upper "None")
-               (!= upper "_"))
-      (setv (get args-dict "upper") (expr-compile upper))))
-  (when args
-    (setv step (args.popleft))
-    (when (and (!= step "None")
-               (!= step "_"))
-      (setv (get args-dict "step") (expr-compile step))))
-
-  (ast.Slice #** args-dict
-             #** sexp.position-info))
+(defn parse-comprehensions [generator-body]
+  (setv q (deque generator-body)
+        rst [])
+  (print q)
+  (while q
+    (setv comprehension (ast.comprehension
+                          :is-async (if (= (q.popleft) "for") 0 1)
+                          :target (expr-compile (q.popleft) :ctx ast.Store)
+                          :iter (expr-compile (q.popleft))))
+    (setv ifs [])
+    (while (and q (not (in (str (get q 0)) ["for" "async-for"])))
+      (ifs.append (q.popleft)))
+    (setv comprehension.ifs (list (map expr-compile (get ifs (slice 1 None 2)))))
+    (rst.append comprehension))
+  rst)
 
 (defn lambda-p [sexp]
   (= (str sexp.op) "lambda"))
@@ -236,6 +226,35 @@
     (= sexp.op "await") (await-compile sexp)
     True (call-compile sexp)))
 
+(defn slice-compile [sexp]
+  (setv [_ #* args] sexp.list
+        args (deque args)
+        args-dict {})
+  (when args
+    (setv lower (args.popleft))
+    (when (and (!= lower "None")
+               (!= lower "_"))
+      (setv (get args-dict "lower") (expr-compile lower))))
+  (when args
+    (setv upper (args.popleft))
+    (when (and (!= upper "None")
+               (!= upper "_"))
+      (setv (get args-dict "upper") (expr-compile upper))))
+  (when args
+    (setv step (args.popleft))
+    (when (and (!= step "None")
+               (!= step "_"))
+      (setv (get args-dict "step") (expr-compile step))))
+
+  (ast.Slice #** args-dict
+             #** sexp.position-info))
+
+(defn list-comp-compile [sexp]
+  (setv [#* generator-body elt] sexp)
+  (ast.ListComp :elt (expr-compile elt)
+                :generators (parse-comprehensions generator-body)
+                #** sexp.position-info))
+
 (defn list-compile [sexp ctx]
   (setv args sexp.list)
   (ast.List :elts (list (map (fn [x] (expr-compile x ctx))
@@ -244,7 +263,9 @@
             #** sexp.position-info))
 
 (defn bracket-compiler [sexp ctx]
-  (cond (slice-p sexp) (slice-compile sexp)
+  (cond (< (len sexp) 1) (list-compile sexp ctx)
+        (= (str sexp.op) ":") (slice-compile sexp)
+        (in (str sexp.op) ["for" "async-for"]) (list-comp-compile sexp)
         True (list-compile sexp ctx)))
 
 (defn set-compile [sexp]
