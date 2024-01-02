@@ -86,40 +86,46 @@
   (= (str sexp.op) "if"))
 
 (defn if-stmt-compile [sexp]
-  (setv [_ test then orelse]
-        (if (< (len sexp.list) 4)
-            [#* sexp.list None]
-            sexp.list))
+  (setv [_ test #* body] sexp.list
+        lastx (get body -1)
+        [then orelse] (if (and (isinstance lastx Paren)
+                               (= lastx.op "else"))
+                          [(cut body None -1) lastx.operands]
+                          [body []]))
   (ast.If :test (expr-compile test)
-          :body (stmt-list-compile [then])
-          :orelse (if orelse (stmt-list-compile [orelse]) [])
+          :body (stmt-list-compile then)
+          :orelse (stmt-list-compile orelse)
           #** sexp.position-info))
 
 (defn while-p [sexp]
   (= (str sexp.op) "while"))
 
 (defn while-compile [sexp]
-  (setv [_ test then orelse]
-        (if (< (len sexp.list) 4)
-            [#* sexp.list None]
-            sexp.list))
+  (setv [_ test #* body] sexp.list
+        lastx (get body -1)
+        [then orelse] (if (and (isinstance lastx Paren)
+                               (= lastx.op "else"))
+                          [(cut body None -1) lastx.operands]
+                          [body []]))
   (ast.While :test (expr-compile test)
-             :body (stmt-list-compile [then])
-             :orelse (if orelse (stmt-list-compile [orelse]) [])
+             :body (stmt-list-compile then)
+             :orelse (stmt-list-compile orelse)
              #** sexp.position-info))
 
 (defn for-p [sexp]
   (= (str sexp.op) "for"))
 
 (defn for-compile [sexp]
-  (setv [_ target iterable body orelse]
-        (if (< (len sexp.list) 5)
-            [#* sexp.list None]
-            sexp.list))
+  (setv [_ target iterable #* body] sexp.list
+        lastx (get body -1)
+        [then orelse] (if (and (isinstance lastx Paren)
+                               (= lastx.op "else"))
+                          [(cut body None -1) lastx.operands]
+                          [body []]))
   (ast.For :target (expr-compile target ast.Store)
            :iter (expr-compile iterable)
-           :body (stmt-list-compile [body])
-           :orelse (if orelse (stmt-list-compile [orelse]) [])
+           :body (stmt-list-compile then)
+           :orelse (stmt-list-compile orelse)
            #** sexp.position-info))
 
 (defn deco-p [sexp]
