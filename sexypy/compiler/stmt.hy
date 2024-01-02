@@ -131,6 +131,17 @@
 (defn deco-p [sexp]
   (= (str sexp.op) "deco"))
 
+(defn raise-compile [sexp]
+  (setv body sexp.operands)
+  (assert (or (= (len body) 1)
+              (and (= (len body) 3)
+                   (= (get body 1) ":from"))))
+  (setv kwargs {"exc" (expr-compile (get body 0))})
+  (when (> (len body) 1)
+    (setv (get kwargs "cause") (expr-compile (get body -1))))
+  (ast.Raise #** kwargs
+             #** sexp.position-info))
+
 (defn parse-exception-bracket [bracket]
   (setv lst bracket.list)
   (setv name (if (and (> (len lst) 2)
@@ -281,6 +292,7 @@
         (for-p sexp) (for-compile sexp)
         (= (str sexp.op) "break") (ast.Break #** sexp.position-info)
         (= (str sexp.op) "continue") (ast.Continue #** sexp.position-info)
+        (= (str sexp.op) "raise") (raise-compile sexp)
         (= (str sexp.op) "try") (try-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
