@@ -44,8 +44,6 @@ module <span class="hljs-type">Python</span>
 
           | <span class="hljs-type">Match</span>(<span class="hljs-built_in">expr</span> subject, match_case* cases)
 
-          | <span class="hljs-type">Assert</span>(<span class="hljs-built_in">expr</span> test, <span class="hljs-built_in">expr</span>? msg)
-
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
 

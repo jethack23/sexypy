@@ -141,6 +141,13 @@
     (setv (get kwargs "cause") (expr-compile (get body -1))))
   (ast.Raise #** kwargs
              #** sexp.position-info))
+ 
+(defn assert-compile [sexp]
+  (setv kwargs {"test" (expr-compile (get sexp 1))})
+  (when (> (len sexp 2))
+    (setv (get kwargs "msg") (expr-compile (get sexp 2))))
+  (ast.Assert #** kwargs
+              #** sexp.position-info))
 
 (defn parse-exception-bracket [bracket]
   (setv lst bracket.list)
@@ -293,6 +300,7 @@
         (= (str sexp.op) "break") (ast.Break #** sexp.position-info)
         (= (str sexp.op) "continue") (ast.Continue #** sexp.position-info)
         (= (str sexp.op) "raise") (raise-compile sexp)
+        (= (str sexp.op) "assert") (assert-compile sexp)
         (= (str sexp.op) "try") (try-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
