@@ -201,6 +201,23 @@
     :body (expr-compile body)
     #** sexp.position-info))
 
+(defn yield-compile [sexp]
+  (setv val-dict (if (> (len sexp) 1)
+                     {"value" (expr-compile (get sexp 1))}
+                     {}))
+  (ast.Yield #** val-dict
+             #** sexp.position-info))
+
+(defn yield-from-compile [sexp]
+  (setv value (get sexp 1))
+  (ast.YieldFrom :value (expr-compile value)
+                 #** sexp.position-info))
+
+(defn await-compile [sexp]
+  (setv [_ value] sexp.list)
+  (ast.Await :value (expr-compile value)
+             #** sexp.position-info))
+
 (defn paren-compiler [sexp ctx]
   (cond
     (tuple-p sexp) (tuple-compile sexp ctx)
@@ -214,6 +231,9 @@
     (namedexpr-p sexp) (namedexpr-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
     (lambda-p sexp) (lambda-compile sexp)
+    (= sexp.op "yield") (yield-compile sexp)
+    (= sexp.op "yield-from") (yield-from-compile sexp)
+    (= sexp.op "await") (await-compile sexp)
     True (call-compile sexp)))
 
 (defn list-compile [sexp ctx]

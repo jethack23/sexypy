@@ -51,10 +51,6 @@ module <span class="hljs-type">Python</span>
          | <span class="hljs-type">SetComp</span>(<span class="hljs-built_in">expr</span> elt, comprehension* generators)
          | <span class="hljs-type">DictComp</span>(<span class="hljs-built_in">expr</span> key, <span class="hljs-built_in">expr</span> value, comprehension* generators)
          | <span class="hljs-type">GeneratorExp</span>(<span class="hljs-built_in">expr</span> elt, comprehension* generators)
-         -- the grammar constrains where <span class="hljs-keyword">yield</span> expressions can occur
-         | <span class="hljs-type">Await</span>(<span class="hljs-built_in">expr</span> value)
-         | <span class="hljs-type">Yield</span>(<span class="hljs-built_in">expr</span>? value)
-         | <span class="hljs-type">YieldFrom</span>(<span class="hljs-built_in">expr</span> value)
          | <span class="hljs-type">FormattedValue</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">int</span> conversion, <span class="hljs-built_in">expr</span>? format_spec)
          | <span class="hljs-type">JoinedStr</span>(<span class="hljs-built_in">expr</span>* values)
 
