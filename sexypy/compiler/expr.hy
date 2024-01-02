@@ -168,7 +168,6 @@
 (defn parse-comprehensions [generator-body]
   (setv q (deque generator-body)
         rst [])
-  (print q)
   (while q
     (setv comprehension (ast.comprehension
                           :is-async (if (= (q.popleft) "for") 0 1)
@@ -180,6 +179,13 @@
     (setv comprehension.ifs (list (map expr-compile (get ifs (slice 1 None 2)))))
     (rst.append comprehension))
   rst)
+
+(defn gen-exp-compile [sexp]
+  (setv sexp.op.value (sexp.op.value.replace "gfor" "for")
+        [#* generator-body elt] sexp)
+  (ast.GeneratorExp :elt (expr-compile elt)
+                    :generators (parse-comprehensions generator-body)
+                    #** sexp.position-info))
 
 (defn lambda-p [sexp]
   (= (str sexp.op) "lambda"))
@@ -220,6 +226,7 @@
     (methodcall-p sexp) (methodcall-compile sexp)
     (namedexpr-p sexp) (namedexpr-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
+    (in (str sexp.op) ["gfor" "async-gfor"]) (gen-exp-compile sexp)
     (lambda-p sexp) (lambda-compile sexp)
     (= sexp.op "yield") (yield-compile sexp)
     (= sexp.op "yield-from") (yield-from-compile sexp)
@@ -285,10 +292,26 @@
             :values values
             #** sexp.position-info))
 
+(defn dict-comp-compile [sexp]
+  (setv [#* generator-body key value] sexp)
+  (ast.DictComp :key (expr-compile key)
+                :value (expr-compile value)
+                :generators (parse-comprehensions generator-body)
+                #** sexp.position-info))
+
+(defn set-comp-compile [sexp]
+  (setv sexp.op.value (sexp.op.value.replace "," "")
+        [#* generator-body elt] sexp)
+  (ast.SetComp :elt (expr-compile elt)
+               :generators (parse-comprehensions generator-body)
+               #** sexp.position-info))
+
 (defn brace-compiler [sexp]
-  (if (= (str sexp.op) ",")
-      (set-compile sexp)
-      (dict-compile sexp)))
+  (cond (< (len sexp) 1) (dict-compile sexp)
+        (in (str sexp.op) ["for" "async-for"]) (dict-comp-compile sexp)
+        (in (str sexp.op) [",for" ",async-for"]) (set-comp-compile sexp)
+        (= (str sexp.op) ",") (set-compile sexp)
+        True (dict-compile sexp)))
 
 (defn metaindicator-p [sexp]
   (isinstance sexp MetaIndicator))
