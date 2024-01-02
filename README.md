@@ -45,8 +45,6 @@ module <span class="hljs-type">Python</span>
           | <span class="hljs-type">Match</span>(<span class="hljs-built_in">expr</span> subject, match_case* cases)
 
           | <span class="hljs-type">Raise</span>(<span class="hljs-built_in">expr</span>? exc, <span class="hljs-built_in">expr</span>? cause)
-          | <span class="hljs-type">Try</span>(<span class="hljs-built_in">stmt</span>* body, excepthandler* handlers, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">stmt</span>* finalbody)
-          | <span class="hljs-type">TryStar</span>(<span class="hljs-built_in">stmt</span>* body, excepthandler* handlers, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">stmt</span>* finalbody)
           | <span class="hljs-type">Assert</span>(<span class="hljs-built_in">expr</span> test, <span class="hljs-built_in">expr</span>? msg)
 
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses

@@ -131,6 +131,70 @@
 (defn deco-p [sexp]
   (= (str sexp.op) "deco"))
 
+(defn parse-exception-bracket [bracket]
+  (setv lst bracket.list)
+  (setv name (if (and (> (len lst) 2)
+                      (= (get lst -2) ":as"))
+                 (str (get [(lst.pop) (lst.pop)] 1))
+                 None))
+  (setv type (if (> (len lst) 1)
+                 (ast.Tuple :elts (list (map expr-compile lst))
+                            :ctx (ast.Load)
+                            #** bracket.position-info)
+                 (expr-compile (get lst 0))))
+  [type name])
+
+(defn parse-except [handler]
+  (setv body handler.operands)
+  (setv [type name] (if (isinstance (get body 0) Bracket)
+                        (do (setv body (deque handler.operands))
+                            (parse-exception-bracket (body.popleft)))
+                        [None None]))
+  (setv kwargs {"body" (stmt-list-compile body)})
+  (when type
+    (setv (get kwargs "type") type))
+  (when name
+    (setv (get kwargs "name") name))
+  (ast.ExceptHandler #** kwargs
+                     #** handler.position-info))
+
+(defn try-compile [sexp]
+  (setv body sexp.operands)
+  ;; finally
+  (setv finalbody (if (and (isinstance (get body -1) Paren)
+                           (= (. (get body -1) op) "finally"))
+                      (. (body.pop) operands)
+                      []))
+  ;; else
+  (setv orelse (if (and (isinstance (get body -1) Paren)
+                        (= (. (get body -1) op) "else"))
+                   (. (body.pop) operands)
+                   []))
+  ;; excepts
+  (setv handlers (deque))
+  (while (and (isinstance (get body -1) Paren)
+              (= (. (get body -1) op) "except"))
+    (handlers.appendleft (body.pop)))
+  (setv handlers (list (map parse-except handlers)))
+
+  ;; except*s
+  (setv starhandlers (deque))
+  (while (and (isinstance (get body -1) Paren)
+              (= (. (get body -1) op) "except*"))
+    (starhandlers.appendleft (body.pop)))
+  (setv starhandlers (list (map parse-except starhandlers)))
+
+  (assert (or (not starhandlers) (not handlers)))
+
+  ((if (not starhandlers)
+       ast.Try
+       ast.TryStar)
+    :body (stmt-list-compile body)
+    :handlers (or handlers starhandlers)
+    :orelse (stmt-list-compile orelse)
+    :finalbody (stmt-list-compile finalbody)
+   #** sexp.position-info))
+
 (defn deco-compile [sexp decorator-list]
   (setv [op decorator def-statement] sexp.list
         new-deco-list (if (isinstance decorator Bracket)
@@ -217,6 +281,7 @@
         (for-p sexp) (for-compile sexp)
         (= (str sexp.op) "break") (ast.Break #** sexp.position-info)
         (= (str sexp.op) "continue") (ast.Continue #** sexp.position-info)
+        (= (str sexp.op) "try") (try-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
