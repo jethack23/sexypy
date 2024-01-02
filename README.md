@@ -64,8 +64,6 @@ module <span class="hljs-type">Python</span>
 
 
     comprehension = (<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> iter, <span class="hljs-built_in">expr</span>* ifs, <span class="hljs-built_in">int</span> is_async)
-
-    excepthandler = <span class="hljs-type">ExceptHandler</span>(<span class="hljs-built_in">expr</span>? <span class="hljs-keyword">type</span>, identifier? name, <span class="hljs-built_in">stmt</span>* body)
                     attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
 
 
