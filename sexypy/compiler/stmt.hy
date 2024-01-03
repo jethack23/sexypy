@@ -86,15 +86,10 @@
   (= (str sexp.op) "if"))
 
 (defn if-stmt-compile [sexp]
-  (setv [_ test #* body] sexp.list
-        lastx (get body -1)
-        [then orelse] (if (and (isinstance lastx Paren)
-                               (= lastx.op "else"))
-                          [(cut body None -1) lastx.operands]
-                          [body []]))
+  (setv [_ test then #* orelse] sexp.list)
   (ast.If :test (expr-compile test)
-          :body (stmt-list-compile then)
-          :orelse (stmt-list-compile orelse)
+          :body (stmt-list-compile [then])
+          :orelse (stmt-list-compile [#* orelse])
           #** sexp.position-info))
 
 (defn while-p [sexp]
