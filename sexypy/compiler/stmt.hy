@@ -344,7 +344,7 @@
         (= (str sexp.op) "async-def") (functiondef-compile sexp decorator-list :async True)
         (= (str sexp.op) "async-for") (with-compile sexp :async True)
         (= (str sexp.op) "async-with") (with-compile sexp :async True)
-        ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
+        ;; TODO: Pattern Matching
         True (expr-wrapper sexp)))
 
 (defn stmt-list-compile [sexp-list]
