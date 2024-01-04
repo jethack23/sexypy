@@ -20,46 +20,41 @@ hy -m unittest
 
 
 # AST todo
-<pre class="nimrod hljs" style="text-align: start;" data-mce-style="background-color: #f8f8f8; color: #000000; text-align: start;" contenteditable="false" data-mce-selected="1">-- <span class="hljs-type">ASDL</span>'s <span class="hljs-number">4</span> builtin types are:
--- identifier, <span class="hljs-built_in">int</span>, <span class="hljs-built_in">string</span>, constant
+```
+mod = Module(stmt* body, type_ignore* type_ignores)
+    | Interactive(stmt* body)
+    | Expression(expr body)
+    | FunctionType(expr* argtypes, expr returns)
 
-module <span class="hljs-type">Python</span>
-{
-    <span class="hljs-keyword">mod</span> = <span class="hljs-type">Module</span>(<span class="hljs-built_in">stmt</span>* body, type_ignore* type_ignores)
-        | <span class="hljs-type">Interactive</span>(<span class="hljs-built_in">stmt</span>* body)
-        | <span class="hljs-type">Expression</span>(<span class="hljs-built_in">expr</span> body)
-        | <span class="hljs-type">FunctionType</span>(<span class="hljs-built_in">expr</span>* argtypes, <span class="hljs-built_in">expr</span> returns)
+stmt = Match(expr subject, match_case* cases)
 
-    <span class="hljs-built_in">stmt</span> = <span class="hljs-type">Match</span>(<span class="hljs-built_in">expr</span> subject, match_case* cases)
+        -- col_offset is the byte offset in the utf8 string the parser uses
+        attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
 
-          -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
-          attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
+expr = FormattedValue(expr value, int conversion, expr? format_spec)
+        | JoinedStr(expr* values)
 
-    <span class="hljs-built_in">expr</span> = <span class="hljs-type">FormattedValue</span>(<span class="hljs-built_in">expr</span> value, <span class="hljs-built_in">int</span> conversion, <span class="hljs-built_in">expr</span>? format_spec)
-         | <span class="hljs-type">JoinedStr</span>(<span class="hljs-built_in">expr</span>* values)
+        -- col_offset is the byte offset in the utf8 string the parser uses
+        attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
 
-          -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
-          attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
+match_case = (pattern pattern, expr? guard, stmt* body)
 
-    match_case = (pattern pattern, <span class="hljs-built_in">expr</span>? guard, <span class="hljs-built_in">stmt</span>* body)
+pattern = MatchValue(expr value)
+        | MatchSingleton(constant value)
+        | MatchSequence(pattern* patterns)
+        | MatchMapping(expr* keys, pattern* patterns, identifier? rest)
+        | MatchClass(expr cls, pattern* patterns, identifier* kwd_attrs, pattern* kwd_patterns)
 
-    pattern = <span class="hljs-type">MatchValue</span>(<span class="hljs-built_in">expr</span> value)
-            | <span class="hljs-type">MatchSingleton</span>(constant value)
-            | <span class="hljs-type">MatchSequence</span>(pattern* patterns)
-            | <span class="hljs-type">MatchMapping</span>(<span class="hljs-built_in">expr</span>* keys, pattern* patterns, identifier? rest)
-            | <span class="hljs-type">MatchClass</span>(<span class="hljs-built_in">expr</span> cls, pattern* patterns, identifier* kwd_attrs, pattern* kwd_patterns)
+        | MatchStar(identifier? name)
+        -- The optional "rest" MatchMapping parameter handles capturing extra mapping keys
 
-            | <span class="hljs-type">MatchStar</span>(identifier? name)
-            -- <span class="hljs-type">The</span> optional <span class="hljs-string">"rest"</span> <span class="hljs-type">MatchMapping</span> parameter handles capturing extra mapping keys
+        | MatchAs(pattern? pattern, identifier? name)
+        | MatchOr(pattern* patterns)
 
-            | <span class="hljs-type">MatchAs</span>(pattern? pattern, identifier? name)
-            | <span class="hljs-type">MatchOr</span>(pattern* patterns)
+            attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 
-             attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span> end_lineno, <span class="hljs-built_in">int</span> end_col_offset)
-
-    type_ignore = <span class="hljs-type">TypeIgnore</span>(<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">string</span> tag)
-
-}</pre>
+type_ignore = TypeIgnore(int lineno, string tag)
+```
 
 Implemented Components are removed   
 - type_comment never considered. Later, it should be covered
