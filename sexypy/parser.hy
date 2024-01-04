@@ -121,21 +121,25 @@
   (cond (in token augassignop-dict)
         (Symbol token #** position-info)
 
-        (and (> (len token) 1) (= (get token 0) ":"))
-        (keyword-token-parse token tktype position-info)
-
-        (and (> (len token) 1) (= (get token 0) "*"))
-        (star-token-parse token tktype position-info)
-
-        (and (> (len token) 1) (in (get token 0) "+-"))
-        (unary-op-parse token tktype position-info)
-
-        (or  (= tktype "number")
-             (in token special-literals))
+        (in token special-literals)
         (Constant token #** position-info)
 
+        (and (= tktype "number") (not (in (get token 0) "+-")))
+        (Constant token #** position-info)
+        
         (in tktype ["'''" "\"\"\"" "\""])
         (string-parse token tktype position-info)
+
+        (< (len token) 2) (Symbol token #** position-info)
+
+        (= (get token 0) ":")
+        (keyword-token-parse token tktype position-info)
+
+        (= (get token 0) "*")
+        (star-token-parse token tktype position-info)
+
+        (in (get token 0) "+-")
+        (unary-op-parse token tktype position-info)
 
         True (Symbol token #** position-info)))
 
