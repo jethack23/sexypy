@@ -30,15 +30,7 @@ module <span class="hljs-type">Python</span>
         | <span class="hljs-type">Expression</span>(<span class="hljs-built_in">expr</span> body)
         | <span class="hljs-type">FunctionType</span>(<span class="hljs-built_in">expr</span>* argtypes, <span class="hljs-built_in">expr</span> returns)
 
-    <span class="hljs-built_in">stmt</span> = <span class="hljs-type">AsyncFunctionDef</span>(identifier name, arguments args,
-                             <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
-                             <span class="hljs-built_in">string</span>? type_comment)
-
-          -- use 'orelse' because <span class="hljs-keyword">else</span> <span class="hljs-keyword">is</span> a keyword <span class="hljs-keyword">in</span> target languages
-          | <span class="hljs-type">AsyncFor</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> iter, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">string</span>? type_comment)
-          | <span class="hljs-type">AsyncWith</span>(withitem* items, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">string</span>? type_comment)
-
-          | <span class="hljs-type">Match</span>(<span class="hljs-built_in">expr</span> subject, match_case* cases)
+    <span class="hljs-built_in">stmt</span> = <span class="hljs-type">Match</span>(<span class="hljs-built_in">expr</span> subject, match_case* cases)
 
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)

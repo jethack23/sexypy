@@ -120,18 +120,21 @@
 (defn for-p [sexp]
   (= (str sexp.op) "for"))
 
-(defn for-compile [sexp]
+(defn for-compile [sexp [async False]]
   (setv [_ target iterable #* body] sexp.list
         lastx (get body -1)
         [then orelse] (if (and (isinstance lastx Paren)
                                (= lastx.op "else"))
                           [(cut body None -1) lastx.operands]
                           [body []]))
-  (ast.For :target (expr-compile target ast.Store)
-           :iter (expr-compile iterable)
-           :body (stmt-list-compile then)
-           :orelse (stmt-list-compile orelse)
-           #** sexp.position-info))
+  ((if async
+       ast.AsyncFor
+       ast.For)
+    :target (expr-compile target ast.Store)
+    :iter (expr-compile iterable)
+    :body (stmt-list-compile then)
+    :orelse (stmt-list-compile orelse)
+   #** sexp.position-info))
 
 (defn deco-p [sexp]
   (= (str sexp.op) "deco"))
@@ -228,10 +231,12 @@
         (rst.append (ast.withitem :context-expr (expr-compile elt)))))
   rst)
 
-(defn with-compile [sexp]
+(defn with-compile [sexp [async False]]
   (setv [bracket-sexp #* body] sexp.operands
         items (with-items-parse bracket-sexp))
-  (ast.With
+  ((if async
+       ast.AsyncWith
+       ast.With)
     :items items
     :body (stmt-list-compile body)
     #** sexp.position-info))
@@ -246,12 +251,14 @@
 (defn functiondef-p [sexp]
   (= (str sexp.op) "def"))
 
-(defn functiondef-compile [sexp decorator-list]
+(defn functiondef-compile [sexp decorator-list [async False]]
   (setv [op fnname args #* body] sexp.list)
   (if (and body (isinstance (get body 0) Annotation))
       (setv [ann #* body] body)
       (setv ann None))
-  (ast.FunctionDef
+  ((if async
+       ast.AsyncFunctionDef
+       ast.FunctionDef)
     :name fnname.name
     :args (def-args-parse args)
     :body (stmt-list-compile body)
@@ -332,6 +339,9 @@
         (= (str sexp.op) "global") (global-compile sexp)
         (= (str sexp.op) "nonlocal") (nonlocal-compile sexp)
         (classdef-p sexp) (classdef-compile sexp decorator-list)
+        (= (str sexp.op) "async-def") (functiondef-compile sexp decorator-list :async True)
+        (= (str sexp.op) "async-for") (with-compile sexp :async True)
+        (= (str sexp.op) "async-with") (with-compile sexp :async True)
         ;; TODO: statements, imports, control flows, Pattern Matching, function and class definitions, async and await
         True (expr-wrapper sexp)))
 
