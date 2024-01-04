@@ -16,12 +16,13 @@
         position-info {#** symbol.position-info}
         (get position-info "end_col_offset") (+ (get position-info "col_offset") (len name))
         rst (ast.Name :id name
-                      :ctx (ctx)
+                      :ctx (ast.Load)
                       #** position-info))
   (for [attr attrs]
     (+= (get position-info "end_col_offset") 1 (len attr))
     (setv rst (ast.Attribute :value rst
                              :attr attr
-                             :ctx (ctx)
+                             :ctx (ast.Load)
                              #** position-info)))
+  (setv rst.ctx (ctx))
   rst)

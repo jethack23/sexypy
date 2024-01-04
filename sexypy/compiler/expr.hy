@@ -110,15 +110,16 @@
 
 (defn attribute-compile [sexp ctx]
   (setv [_ value #* attrs] sexp.list
-        rst (expr-compile value ctx)
+        rst (expr-compile value ast.Load)
         position-info {#** sexp.position-info})
   (for [attr attrs]
     (setv (get position-info "end_lineno") (get attr.position-info "end_lineno")
           (get position-info "end_col_offset") (get attr.position-info "end_col_offset")
           rst (ast.Attribute :value rst
                              :attr (str attr)
-                             :ctx (ctx)
+                             :ctx (ast.Load)
                              #** position-info)))
+  (setv rst.ctx (ctx))
   rst)
 
 (defn methodcall-p [sexp]

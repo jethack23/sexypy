@@ -27,9 +27,11 @@
   (if (isinstance (get body 1) Annotation)
       (do (setv [target annotation #* value] body
                 value-dict (if value {"value" (expr-compile (get value 0))} {}))
+          (print target annotation (repr target))
           (ast.AnnAssign :target (expr-compile target :ctx ast.Store)
                          :annotation (expr-compile annotation)
-                         :simple (isinstance target Symbol)
+                         :simple (and (isinstance target Symbol)
+                                      (not (in "." (str target))))
                          #** value-dict
                          #** sexp.position-info))
       (do (setv [#* targets value] body)
