@@ -208,6 +208,24 @@
     :finalbody (stmt-list-compile finalbody)
    #** sexp.position-info))
 
+(defn with-items-parse [sexp]
+  (setv rst []
+        q (deque sexp.list))
+  (while q
+    (setv elt (q.popleft))
+    (if (= (str elt) "as")
+        (setv (. (get rst -1) optional-vars) (expr-compile (q.popleft) :ctx ast.Store))
+        (rst.append (ast.withitem :context-expr (expr-compile elt)))))
+  rst)
+
+(defn with-compile [sexp]
+  (setv [bracket-sexp #* body] sexp.operands
+        items (with-items-parse bracket-sexp))
+  (ast.With
+    :items items
+    :body (stmt-list-compile body)
+    #** sexp.position-info))
+
 (defn deco-compile [sexp decorator-list]
   (setv [op decorator def-statement] sexp.list
         new-deco-list (if (isinstance decorator Bracket)
@@ -297,6 +315,7 @@
         (= (str sexp.op) "raise") (raise-compile sexp)
         (= (str sexp.op) "assert") (assert-compile sexp)
         (= (str sexp.op) "try") (try-compile sexp)
+        (= (str sexp.op) "with") (with-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)

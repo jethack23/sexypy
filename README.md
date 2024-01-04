@@ -39,7 +39,6 @@ module <span class="hljs-type">Python</span>
 
           -- use 'orelse' because <span class="hljs-keyword">else</span> <span class="hljs-keyword">is</span> a keyword <span class="hljs-keyword">in</span> target languages
           | <span class="hljs-type">AsyncFor</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> iter, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">string</span>? type_comment)
-          | <span class="hljs-type">With</span>(withitem* items, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">string</span>? type_comment)
           | <span class="hljs-type">AsyncWith</span>(withitem* items, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">string</span>? type_comment)
 
           | <span class="hljs-type">Match</span>(<span class="hljs-built_in">expr</span> subject, match_case* cases)
@@ -57,8 +56,6 @@ module <span class="hljs-type">Python</span>
     -- <span class="hljs-keyword">import</span> name <span class="hljs-keyword">with</span> optional '<span class="hljs-keyword">as</span>' alias.
     alias = (identifier name, identifier? asname)
              attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
-
-    withitem = (<span class="hljs-built_in">expr</span> context_expr, <span class="hljs-built_in">expr</span>? optional_vars)
 
     match_case = (pattern pattern, <span class="hljs-built_in">expr</span>? guard, <span class="hljs-built_in">stmt</span>* body)
 
