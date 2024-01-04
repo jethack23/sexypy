@@ -53,7 +53,7 @@
         q (deque names))
   (while q
     (setv n (q.popleft))
-    (if (= n ":as")
+    (if (= n "as")
         (setv (. (get rst -1) asname) (str (q.popleft)))
         (rst.append (ast.alias :name (str n) #** n.position-info))))
   rst)
@@ -130,7 +130,7 @@
   (setv body sexp.operands)
   (assert (or (= (len body) 1)
               (and (= (len body) 3)
-                   (= (get body 1) ":from"))))
+                   (= (get body 1) "from"))))
   (setv kwargs {"exc" (expr-compile (get body 0))})
   (when (> (len body) 1)
     (setv (get kwargs "cause") (expr-compile (get body -1))))
@@ -147,7 +147,7 @@
 (defn parse-exception-bracket [bracket]
   (setv lst bracket.list)
   (setv name (if (and (> (len lst) 2)
-                      (= (get lst -2) ":as"))
+                      (= (get lst -2) "as"))
                  (str (get [(lst.pop) (lst.pop)] 1))
                  None))
   (setv type (if (> (len lst) 1)
