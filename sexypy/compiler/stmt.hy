@@ -3,7 +3,8 @@
 (import collections [deque])
 (import functools [reduce])
 
-(import sexypy.compiler.expr [expr-compile]
+(import sexypy.compiler.expr [expr-compile
+                              def-args-parse]
         sexypy.compiler.utils *
         sexypy.utils *)
 
@@ -238,9 +239,9 @@
 
 (defn functiondef-compile [sexp decorator-list]
   (setv [op fnname args #* body] sexp.list)
-  (if (and body (= (get body 0) ":->"))
-      (setv [_ returns #* body] body)
-      (setv returns None))
+  (if (and body (isinstance (get body 0) Annotation))
+      (setv [ann #* body] body)
+      (setv ann None))
   (ast.FunctionDef
     :name fnname.name
     :args (def-args-parse args)
@@ -248,7 +249,7 @@
     :decorator-list (if decorator-list
                         (list (map expr-compile decorator-list))
                         [])
-    :returns (if returns (expr-compile returns) None)
+    :returns (if ann (expr-compile ann.value) None)
     #** sexp.position-info))
 
 (defn return-p [sexp]

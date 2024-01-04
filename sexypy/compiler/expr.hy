@@ -187,6 +187,67 @@
                     :generators (parse-comprehensions generator-body)
                     #** sexp.position-info))
 
+(defn def-args-parse [sexp]
+  ;; TODO: annotation
+  (setv q (deque sexp.list)
+        rst (ast.arguments :posonlyargs []
+                           #** sexp.position-info)
+        args []
+        defaults []
+        kwonlyargs []
+        kw-defaults [])
+  
+  ;; before starred
+  (while (and q (not (.startswith (str (get q 0)) "*")))
+    (setv arg (q.popleft))
+    (if (= arg "/") (setv rst.posonlyargs args
+                          args [])
+        (do (setv ast-arg (ast.arg :arg arg.name
+                                   #** arg.position-info))
+            (when (and q (isinstance (get q 0) Annotation))
+              (setv ast-arg.annotation (expr-compile (q.popleft))))
+            (args.append ast-arg)
+            (when (keyword-arg-p arg)
+              (defaults.append (expr-compile (q.popleft)))))))
+  (setv rst.args args
+        rst.defaults defaults)
+  
+  ;; starred
+  (when (and q (isinstance (get q 0) Starred))
+    (setv arg (q.popleft)
+          ast-arg (ast.arg :arg arg.value.name
+                           #** arg.position-info))
+    (when (and q (isintance (get q 0) Annotation))
+      (setv ast-arg.annotation (expr-compile (q.popleft))))
+    (setv rst.vararg ast-arg))
+  (when (and q (= (get q 0) "*"))
+    (q.popleft))
+  
+  ;; before doublestarred
+  (while (and q (and (not (isinstance (get q 0) DoubleStarred))))
+    (setv arg (q.popleft)
+          ast-arg (ast.arg :arg arg.name
+                           #** arg.position-info))
+    (when (and q (isinstance (get q 0) Annotation))
+      (setv ast-arg.annotation (expr-compile (q.popleft))))
+    (kwonlyargs.append ast-arg)
+    (kw-defaults.append (if (keyword-arg-p arg)
+                            (expr-compile (q.popleft))
+                            None)))
+  (setv rst.kwonlyargs kwonlyargs
+        rst.kw-defaults kw-defaults)
+  
+  ;; doublestarred
+  (when q
+    (setv arg (q.popleft)
+          ast-arg (ast.arg :arg arg.value.name
+                           #** arg.position-info))
+    (when (and q (isinstance (get q 0) Annotation))
+      (setv ast-arg.annotation (expr-compile (q.popleft))))
+    (setv rst.kwarg ast-arg))
+  
+  rst)
+
 (defn lambda-p [sexp]
   (= (str sexp.op) "lambda"))
 
@@ -328,6 +389,7 @@
   (cond (paren-p sexp) (paren-compiler sexp ctx)
         (bracket-p sexp) (bracket-compiler sexp ctx)
         (brace-p sexp) (brace-compiler sexp)
+        (isinstance sexp Annotation) (expr-compile sexp.value)
         (starred-p sexp) (starred-compile sexp ctx)
         (constant-p sexp) (constant-compile sexp)
         (string-p sexp) (string-compile sexp)

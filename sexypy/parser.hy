@@ -20,7 +20,7 @@
                                       (+ float-simples [int-simple])))
         number-simple (.join "|" (+ scientific-simples float-simples [int-simple]))
         complex-simple fr"(?:(?:{number-simple})[+-])?(?:{number-simple})j"
-        pattern-labels [[r"\*{0,2}[\(\{\[]" "opening"]
+        pattern-labels [[r"\^?\*{0,2}[\(\{\[]" "opening"]
                         [r"[\)\}\]]" "closing"]
                         #* (list (zip (map (fn [x] (+ r"\w*" x))
                                            [r"\'\'\'(?:[^\\']|\\.)*\'\'\'"
@@ -65,7 +65,10 @@
   (list (map (fn [x] (get position-info x))
              ["lineno" "col_offset" "end_lineno" "end_col_offset"])))
 
-(setv star-list [(fn [value #** kwargs] value) Starred DoubleStarred])
+(setv opening-prefix-dict {"" (fn [value #** kwargs] value)
+                           "*" Starred
+                           "**" DoubleStarred
+                           "^" Annotation})
 
 (setv opening-dict {"(" Paren
                     "{" Brace
@@ -87,7 +90,7 @@
           [lineno col-offset end-lineno end-col-offset]
           (position-info-into-list position-info))
     (cond (= tktype "opening")
-          (stack.append ((get star-list (- (len t) 1))
+          (stack.append ((get opening-prefix-dict (cut t None -1))
                           :value ((get opening-dict (get t -1))
                                    :lineno lineno
                                    :col-offset (+ col-offset (- (len t) 1)))
@@ -132,6 +135,9 @@
 
         (< (len token) 2) (Symbol token #** position-info)
 
+        (= (get token 0) "^")
+        (annotation-token-parse token tktype position-info)
+
         (= (get token 0) ":")
         (keyword-token-parse token tktype position-info)
 
@@ -142,6 +148,14 @@
         (unary-op-parse token tktype position-info)
 
         True (Symbol token #** position-info)))
+
+(defn annotation-token-parse [token tktype position-info]
+  (setv inner-position {#** position-info})
+  (+= (get inner-position "col_offset") 1)
+  (Annotation (token-parse (cut token 1 None)
+                           tktype
+                           inner-position)
+              #** position-info))
 
 (defn keyword-token-parse [token tktype position-info]
   (setv inner-position {#** position-info})
@@ -155,9 +169,10 @@
   (setv num-star (if (= (get token 1) "*") 2 1)
         inner-position {#** position-info})
   (+= (get inner-position "col_offset") num-star)
-  ((get star-list num-star) (token-parse (get token (slice num-star None))
-                                         tktype
-                                         inner-position)
+  ((get opening-prefix-dict (* "*" num-star))
+    (token-parse (get token (slice num-star None))
+                 tktype
+                 inner-position)
    #** position-info))
 
 (defn unary-op-parse [token tktype position-info]

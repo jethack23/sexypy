@@ -100,6 +100,32 @@
   (defn operands-generate [self in-quasi]
     (self.value.generator-expression in-quasi)))
 
+(defclass Annotation [Wrapper]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super) #** kwargs)
+    (setv self.value value
+          self.classname "Annotation")
+    None)
+
+  (defn __repr__ [self]
+    (+ "Ann("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ "^"
+       (str self.value)))
+
+  (defn append [self e]
+    (.append self.value e))
+
+  (defn [property] name [self]
+    self.value.name)
+
+  (defn update-dict [self key value]
+    (setv (get self.__dict__ key) value)
+    (.update-dict self.value key value)))
+
 (defclass Keyword [Wrapper]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
