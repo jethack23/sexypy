@@ -4,4 +4,5 @@
 (import-macro
   test-literal
   test-expr
+  test-stmt
   )

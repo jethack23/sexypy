@@ -26,32 +26,11 @@ mod = Module(stmt* body, type_ignore* type_ignores)
     | Expression(expr body)
     | FunctionType(expr* argtypes, expr returns)
 
-stmt = Match(expr subject, match_case* cases)
-
-        -- col_offset is the byte offset in the utf8 string the parser uses
-        attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
-
 expr = FormattedValue(expr value, int conversion, expr? format_spec)
         | JoinedStr(expr* values)
 
         -- col_offset is the byte offset in the utf8 string the parser uses
         attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
-
-match_case = (pattern pattern, expr? guard, stmt* body)
-
-pattern = MatchValue(expr value)
-        | MatchSingleton(constant value)
-        | MatchSequence(pattern* patterns)
-        | MatchMapping(expr* keys, pattern* patterns, identifier? rest)
-        | MatchClass(expr cls, pattern* patterns, identifier* kwd_attrs, pattern* kwd_patterns)
-
-        | MatchStar(identifier? name)
-        -- The optional "rest" MatchMapping parameter handles capturing extra mapping keys
-
-        | MatchAs(pattern? pattern, identifier? name)
-        | MatchOr(pattern* patterns)
-
-            attributes (int lineno, int col_offset, int end_lineno, int end_col_offset)
 
 type_ignore = TypeIgnore(int lineno, string tag)
 ```

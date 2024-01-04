@@ -243,6 +243,99 @@
     :body (stmt-list-compile body)
     #** sexp.position-info))
 
+(defn match-mapping-parse [lst]
+  (setv keys (cut lst None None 2)
+        patterns (cut lst 1 None 2)
+        rst {})
+  (when (isinstance (get keys -1) DoubleStarred)
+    (setv (get rst "rest") (. (keys.pop) value name)))
+  (setv (get rst "keys") (list (map expr-compile keys))
+        (get rst "patterns") (list (map pattern-parse patterns)))
+  rst)
+
+(defn match-class-parse [lst]
+  (setv q (deque lst)
+        patterns []
+        kwd-attrs []
+        kwd-patterns [])
+  (while q
+    (setv arg (q.popleft))
+    (if (isinstance arg Keyword)
+        (do (kwd-attrs.append arg.value.name)
+            (kwd-patterns.append (pattern-parse (q.popleft))))
+        (patterns.append (pattern-parse arg))))
+  {"patterns" patterns
+   "kwd_attrs" kwd-attrs
+   "kwd_patterns" kwd-patterns})
+
+(defn pattern-parse [sexp]
+  (cond (= (str sexp) "_")
+        (ast.MatchAs #** sexp.position-info)
+
+        (isinstance sexp Symbol)
+        (ast.MatchAs :name sexp.name #** sexp.position-info)
+        
+        (in (str sexp) ["True" "False" "None"])
+        (ast.MatchSingleton
+          :value (eval (str sexp))
+          #** sexp.position-info)
+
+        (isinstance sexp Starred)
+        (ast.MatchStar #** (if (= (str sexp.value) "_")
+                               {}
+                               {"name" sexp.value.name})
+                       #** sexp.position-info)
+
+        (not (isinstance sexp Expression))
+        (ast.MatchValue
+          :value (expr-compile sexp)
+          #** sexp.position-info)
+
+        (isinstance sexp Bracket)
+        (ast.MatchSequence
+          :patterns (list (map pattern-parse sexp.list))
+          #** sexp.position-info)
+
+        (isinstance sexp Brace)
+        (ast.MatchMapping
+          #** (match-mapping-parse sexp.list)
+          #** sexp.position-info)
+
+        (= sexp.op "|")
+        (ast.MatchOr
+          :patterns (list (map pattern-parse sexp.operands))
+          #** sexp.position-info)
+
+        True
+        (ast.MatchClass :cls (expr-compile sexp.op)
+                        #** (match-class-parse sexp.operands)
+                        #** sexp.position-info)))
+
+(defn case-parse [case]
+  (setv [pattern-expr #* body] case.operands
+        pattern (pattern-parse pattern-expr))
+  (when (= (get body 0) "as")
+    (setv pattern (ast.MatchAs :pattern pattern
+                               :name (. (get body 1) name)
+                               #** (merge-position-infos
+                                     pattern-expr.position-info
+                                     (. (get body 1) position-info)))
+          body (cut body 2 None)))
+  (if (= (get body 0) "if")
+      (setv guard-dict {"guard" (expr-compile (get body 1))}
+            body (cut body 2 None))
+      (setv guard-dict {}))
+  (ast.match-case :pattern pattern
+                  #** guard-dict
+                  :body (stmt-list-compile body)))
+
+(defn match-compile [sexp]
+  (setv [subject #* cases] sexp.operands
+        cases (list (map case-parse cases)))
+  (ast.Match :subject (expr-compile subject)
+             :cases cases
+             #** sexp.position-info))
+
 (defn deco-compile [sexp decorator-list]
   (setv [op decorator def-statement] sexp.list
         new-deco-list (if (isinstance decorator Bracket)
@@ -335,6 +428,7 @@
         (= (str sexp.op) "assert") (assert-compile sexp)
         (= (str sexp.op) "try") (try-compile sexp)
         (= (str sexp.op) "with") (with-compile sexp)
+        (= (str sexp.op) "match") (match-compile sexp)
         (deco-p sexp) (deco-compile sexp decorator-list)
         (functiondef-p sexp) (functiondef-compile sexp decorator-list)
         (return-p sexp) (return-compile sexp)
