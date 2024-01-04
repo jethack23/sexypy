@@ -34,9 +34,6 @@ module <span class="hljs-type">Python</span>
                              <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">expr</span>* decorator_list, <span class="hljs-built_in">expr</span>? returns,
                              <span class="hljs-built_in">string</span>? type_comment)
 
-          -- 'simple' indicates that we annotate simple name <span class="hljs-keyword">without</span> parens
-          | <span class="hljs-type">AnnAssign</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> annotation, <span class="hljs-built_in">expr</span>? value, <span class="hljs-built_in">int</span> simple)
-
           -- use 'orelse' because <span class="hljs-keyword">else</span> <span class="hljs-keyword">is</span> a keyword <span class="hljs-keyword">in</span> target languages
           | <span class="hljs-type">AsyncFor</span>(<span class="hljs-built_in">expr</span> target, <span class="hljs-built_in">expr</span> iter, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">stmt</span>* orelse, <span class="hljs-built_in">string</span>? type_comment)
           | <span class="hljs-type">AsyncWith</span>(withitem* items, <span class="hljs-built_in">stmt</span>* body, <span class="hljs-built_in">string</span>? type_comment)

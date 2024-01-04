@@ -23,10 +23,19 @@
   (= (str sexp.op) "="))
 
 (defn assign-compile [sexp]
-  (setv [op #* targets value] sexp.list)
-  (ast.Assign :targets (list (map (fn [x] (expr-compile x :ctx ast.Store)) targets))
-              :value (expr-compile value)
-              #** sexp.position-info))
+  (setv body sexp.operands)
+  (if (isinstance (get body 1) Annotation)
+      (do (setv [target annotation #* value] body
+                value-dict (if value {"value" (expr-compile (get value 0))} {}))
+          (ast.AnnAssign :target (expr-compile target :ctx ast.Store)
+                         :annotation (expr-compile annotation)
+                         :simple (isinstance target Symbol)
+                         #** value-dict
+                         #** sexp.position-info))
+      (do (setv [#* targets value] body)
+          (ast.Assign :targets (list (map (fn [x] (expr-compile x :ctx ast.Store)) targets))
+                      :value (expr-compile value)
+                      #** sexp.position-info)))  )
 
 (defn augassign-p [sexp]
   (in (str sexp.op) augassignop-dict))
