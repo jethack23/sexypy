@@ -154,7 +154,7 @@
  
 (defn assert-compile [sexp]
   (setv kwargs {"test" (expr-compile (get sexp 1))})
-  (when (> (len sexp 2))
+  (when (> (len sexp) 2)
     (setv (get kwargs "msg") (expr-compile (get sexp 2))))
   (ast.Assert #** kwargs
               #** sexp.position-info))
