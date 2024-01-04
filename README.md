@@ -41,11 +41,6 @@ module <span class="hljs-type">Python</span>
           -- col_offset <span class="hljs-keyword">is</span> the byte offset <span class="hljs-keyword">in</span> the utf8 <span class="hljs-built_in">string</span> the parser uses
           attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
 
-
-    -- <span class="hljs-keyword">import</span> name <span class="hljs-keyword">with</span> optional '<span class="hljs-keyword">as</span>' alias.
-    alias = (identifier name, identifier? asname)
-             attributes (<span class="hljs-built_in">int</span> lineno, <span class="hljs-built_in">int</span> col_offset, <span class="hljs-built_in">int</span>? end_lineno, <span class="hljs-built_in">int</span>? end_col_offset)
-
     match_case = (pattern pattern, <span class="hljs-built_in">expr</span>? guard, <span class="hljs-built_in">stmt</span>* body)
 
     pattern = <span class="hljs-type">MatchValue</span>(<span class="hljs-built_in">expr</span> value)
