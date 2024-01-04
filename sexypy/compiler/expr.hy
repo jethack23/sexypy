@@ -170,10 +170,14 @@
   (setv q (deque generator-body)
         rst [])
   (while q
-    (setv comprehension (ast.comprehension
-                          :is-async (if (= (q.popleft) "for") 0 1)
-                          :target (expr-compile (q.popleft) :ctx ast.Store)
-                          :iter (expr-compile (q.popleft))))
+    (setv is-async (if (= (q.popleft) "for") 0 1)
+          target (expr-compile (q.popleft) :ctx ast.Store)
+          _ (q.popleft)
+          iter (expr-compile (q.popleft))
+          comprehension (ast.comprehension
+                          :is-async is-async
+                          :target target
+                          :iter iter))
     (setv ifs [])
     (while (and q (not (in (str (get q 0)) ["for" "async-for"])))
       (ifs.append (q.popleft)))
@@ -182,8 +186,7 @@
   rst)
 
 (defn gen-exp-compile [sexp]
-  (setv sexp.op.value (sexp.op.value.replace "gfor" "for")
-        [#* generator-body elt] sexp)
+  (setv [elt #* generator-body] sexp)
   (ast.GeneratorExp :elt (expr-compile elt)
                     :generators (parse-comprehensions generator-body)
                     #** sexp.position-info))
@@ -288,7 +291,11 @@
     (methodcall-p sexp) (methodcall-compile sexp)
     (namedexpr-p sexp) (namedexpr-compile sexp)
     (subscript-p sexp) (subscript-compile sexp ctx)
-    (in (str sexp.op) ["gfor" "async-gfor"]) (gen-exp-compile sexp)
+    
+    (and (> (len sexp) 1)
+         (in (str (get sexp 1)) ["for" "async-for"]))
+    (gen-exp-compile sexp)
+    
     (lambda-p sexp) (lambda-compile sexp)
     (= sexp.op "yield") (yield-compile sexp)
     (= sexp.op "yield-from") (yield-from-compile sexp)
@@ -319,7 +326,7 @@
              #** sexp.position-info))
 
 (defn list-comp-compile [sexp]
-  (setv [#* generator-body elt] sexp)
+  (setv [elt #* generator-body] sexp)
   (ast.ListComp :elt (expr-compile elt)
                 :generators (parse-comprehensions generator-body)
                 #** sexp.position-info))
@@ -332,9 +339,16 @@
             #** sexp.position-info))
 
 (defn bracket-compiler [sexp ctx]
-  (cond (< (len sexp) 1) (list-compile sexp ctx)
-        (= (str sexp.op) ":") (slice-compile sexp)
-        (in (str sexp.op) ["for" "async-for"]) (list-comp-compile sexp)
+  (cond (< (len sexp) 1)
+        (list-compile sexp ctx)
+        
+        (= (str sexp.op) ":")
+        (slice-compile sexp)
+        
+        (and (> (len sexp) 1)
+             (in (str (get sexp 1)) ["for" "async-for"]))
+        (list-comp-compile sexp)
+        
         True (list-compile sexp ctx)))
 
 (defn set-compile [sexp]
@@ -355,23 +369,27 @@
             #** sexp.position-info))
 
 (defn dict-comp-compile [sexp]
-  (setv [#* generator-body key value] sexp)
+  (setv [key value #* generator-body] sexp)
   (ast.DictComp :key (expr-compile key)
                 :value (expr-compile value)
                 :generators (parse-comprehensions generator-body)
                 #** sexp.position-info))
 
 (defn set-comp-compile [sexp]
-  (setv sexp.op.value (sexp.op.value.replace "," "")
-        [#* generator-body elt] sexp)
+  (setv [elt #* generator-body] sexp.operands)
   (ast.SetComp :elt (expr-compile elt)
                :generators (parse-comprehensions generator-body)
                #** sexp.position-info))
 
 (defn brace-compiler [sexp]
-  (cond (< (len sexp) 1) (dict-compile sexp)
-        (in (str sexp.op) ["for" "async-for"]) (dict-comp-compile sexp)
-        (in (str sexp.op) [",for" ",async-for"]) (set-comp-compile sexp)
+  (cond (< (len sexp) 1)
+        (dict-compile sexp)
+        
+        (and (> (len sexp) 2)
+             (in (str (get sexp 2)) ["for" "async-for"]))
+        ((if (= (str sexp.op) ",") set-comp-compile dict-comp-compile)
+          sexp)
+        
         (= (str sexp.op) ",") (set-compile sexp)
         True (dict-compile sexp)))
 
