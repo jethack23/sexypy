@@ -46,7 +46,8 @@
                                        (parse (f.read)))
                                :type-ignores [])
                    (osp.basename file)
-                   "exec"))))
+                   "exec")
+          (globals))))
 
 (defn repl [translate]
   (while True
@@ -64,7 +65,8 @@
       (print (.join "\n" (list (map ast-to-python stl)))))
     (print "\nresult")
     (for [st stl]
-      (eval (compile (ast.Interactive :body [st]) "" "single")))))
+      (eval (compile (ast.Interactive :body [st]) "" "single")
+            (globals)))))
 
 (defn run []
   (setv args (argparser.parse-args))
