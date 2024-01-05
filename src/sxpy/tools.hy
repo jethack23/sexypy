@@ -61,12 +61,14 @@
     ;; (print (.join "\n" (map str parsed)))
     (setv stl (macroexpand-then-compile parsed))
     (when translate
-      (print "\npython translation")
-      (print (.join "\n" (list (map ast-to-python stl)))))
-    (print "\nresult")
+      (print "python translation")
+      (print (.join "\n" (list (map ast-to-python stl))))
+      (print ""))
+    (print "result")
     (for [st stl]
       (eval (compile (ast.Interactive :body [st]) "" "single")
-            (globals)))))
+            (globals)))
+    (print "\n")))
 
 (defn run []
   (setv args (argparser.parse-args))
