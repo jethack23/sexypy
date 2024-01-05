@@ -1,2 +1,1 @@
-(import sxpy.repl [run]
-        sxpy.sx2py [transcompile])
+(import sxpy.tools [transcompile run])

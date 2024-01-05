@@ -3,12 +3,23 @@ SexyPy stands for **S-ex**_pression-ish(_**y**_)_ **Py**_thon_.
 Highly inspired by Clojure and Hy.   
 Once I loved to use Hy when I need to use python. But as I started to learn Clojure, similarity between two languages confused me. I want a language more straightforward to being python but in S-expression so that I can exploit structural editing and metaprogramming by macro. Thus I decided to start this project.
 
+# Run from source
+```bash
+spy {filename}.sy
+```
+
 # Run REPL
 ```bash
-hy -m sxpy.repl
+spy
 #or
-python -m sxpy.repl
+spy -t #if you want to print python translation.
 ```
+
+# Run translation
+```bash
+s2py {filename}.sy
+```
+It just displays translation. (don't run it)
 
 # Run Tests
 ```bash

@@ -2,7 +2,7 @@
 
 (import ast)
 
-(import sxpy.sx2py [parse macroexpand-then-compile src-to-python])
+(import sxpy.tools [parse macroexpand-then-compile src-to-python])
 
 (defn stmt-to-dump [src]
   (-> src

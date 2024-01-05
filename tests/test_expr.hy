@@ -2,7 +2,7 @@
 
 (import unittest)
 
-(import sxpy.sx2py [parse src-to-python])
+(import sxpy.tools [parse src-to-python])
 
 (defclass TestUnaryOpMethods [unittest.TestCase]
 

@@ -7,7 +7,7 @@
 (import
   sxpy.nodes *
   sxpy.compiler [def-args-parse
-                   stmt-list-compile])
+                 stmt-list-compile])
 
 
 (setv __macro-namespace {})
@@ -40,7 +40,7 @@
   (eval (compile (ast.Interactive :body [def-exp assign-exp])
                  "macro-defining"
                  "single"))
-  (print "# macro defined: " new-name)
+  ;; (print "# macro defined: " new-name)
   None)
 
 (defn macroexpand [sexp]
