@@ -9,7 +9,7 @@
 (defn ast-to-python [st]
   (str (ast.unparse st)))
 
-(when (= __name__ "__main__")
+(defn run []
   (defn eval-translate-print [stl]
     (print "\npython translation")
     (print (.join "\n" (list (map ast-to-python stl))))

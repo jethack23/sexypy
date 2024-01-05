@@ -1,5 +1,6 @@
 (require hyrule *)
 
+(import argparse)
 (import os)
 (import os.path :as osp)
 (import subprocess)
@@ -13,8 +14,12 @@
                                      (parse)
                                      (macroexpand-then-compile)))))
 
-(defmain [_ file]
-  (setv file (osp.join (os.getcwd) file)
+(setv argparser (argparse.ArgumentParser))
+(argparser.add-argument "filename")
+
+(defn transcompile []
+  (setv args (argparser.parse-args)
+        file (osp.join (os.getcwd) args.filename)
         newfile (+ (get (osp.splitext file) 0) ".py"))
   (with [g (open newfile "w")]
     (with [f (open file "r")]
@@ -25,6 +30,6 @@
         (lines.pop))
       (g.write "\n\n\n# translated from below s-expression\n\n")
       (g.write (.join "\n" (map (fn [x] (+ "# " x))
-                              lines)))))
+                                lines)))))
   (subprocess.run ["black" newfile])
   (subprocess.run ["python" newfile]))
