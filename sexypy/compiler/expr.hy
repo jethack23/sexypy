@@ -221,7 +221,7 @@
     (setv arg (q.popleft)
           ast-arg (ast.arg :arg arg.value.name
                            #** arg.position-info))
-    (when (and q (isintance (get q 0) Annotation))
+    (when (and q (isinstance (get q 0) Annotation))
       (setv ast-arg.annotation (expr-compile (q.popleft))))
     (setv rst.vararg ast-arg))
   (when (and q (= (get q 0) "*"))
