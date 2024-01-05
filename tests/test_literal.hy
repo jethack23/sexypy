@@ -1,8 +1,10 @@
 (require hyrule *)
 
+(import ast)
 (import unittest)
 
 (import sexypy.sx2py [src-to-python])
+(import .utils [stmt-to-dump])
 
 (defmacro self-retrieval-assert [src]
   `(equal-test ~src ~src))
@@ -36,7 +38,11 @@
 
   (defn test-raw-string [self]
     (equal-test "r\"\\n\"" "'\\\\n'")
-    (equal-test "\"\\n\"" "'\\n'")))
+    (equal-test "\"\\n\"" "'\\n'"))
+
+  (defn test-f-string [self]
+    (self.assertEqual (stmt-to-dump "f\"sin({a}) is {(sin a):.3}\"")
+                      (ast.dump (ast.parse "f\"sin({a}) is {sin(a):.3}\"")))))
 
 (defclass TestListMethods [unittest.TestCase]
 

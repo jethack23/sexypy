@@ -194,11 +194,35 @@
   rst)
 
 (defn string-parse [token tktype position-info]
-  (setv [prefix #* content _] (token.split tktype))
+  (setv [prefix #* contents _] (token.split tktype))
   (if (in "f" prefix)
-      (f-string-parse token #** position-info)
+      (f-string-parse (prefix.replace "f" "") (.join tktype contents) tktype position-info)
       (String token #** position-info)))
 
-(defn f-string-parse [token #** kwargs]
-  ;; TODO
-  )
+(setv conversion-dict {"!s" 115
+                       "!r" 114
+                       "!a" 97})
+
+(defn f-string-parse [prefix content tktype position-info]
+  ;; TODO: more accurate position-info
+  (setv splitted (re.split r"[\{\}]" content)
+        processed [])
+  (when (= (get splitted -1) "")
+    (splitted.pop))
+  (for [[i piece] (enumerate splitted)]
+    (if (% i 2)
+        (do (if (in ":" piece)
+                (setv [#* quarks format-spec] (piece.split ":")
+                      piece (.join ":" quarks))
+                (setv format-spec None))
+            (if (in (cut piece -2 None) conversion-dict)
+                (do (setv conversion (get conversion-dict (cut piece -2 None))
+                          piece (cut piece None -2)))
+                (setv conversion -1))
+            (processed.append (FStrExpr (.pop (parse piece))
+                                        :conversion conversion
+                                        :format-spec format-spec
+                                        #** position-info)))
+        (processed.append (string-parse (+ prefix tktype piece tktype) tktype position-info))))
+  (Paren (Symbol "f-string" #** position-info)
+         #* processed))

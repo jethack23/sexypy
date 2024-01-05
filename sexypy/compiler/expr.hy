@@ -279,6 +279,30 @@
   (ast.Await :value (expr-compile value)
              #** sexp.position-info))
 
+(defn f-str-value-compile [sexp]
+  (setv format-spec-dict (if (is sexp.format-spec None)
+                             {}
+                             {"format_spec"
+                              (ast.JoinedStr
+                                :values [(ast.Constant
+                                           :value sexp.format-spec
+                                           #** sexp.position-info)]
+                                #** sexp.position-info)}))
+  (ast.FormattedValue :value (expr-compile sexp.value)
+                      :conversion sexp.conversion
+                      #** format-spec-dict
+                      #** sexp.position-info))
+
+(defn f-string-compile [sexp]
+  (setv values sexp.operands
+        compiled [])
+  (for [[i v] (enumerate values)]
+    (if (% i 2)
+        (compiled.append (f-str-value-compile v))
+        (compiled.append (string-compile v))))
+  (ast.JoinedStr :values compiled
+                 #** sexp.position-info))
+
 (defn paren-compiler [sexp ctx]
   (cond
     (tuple-p sexp) (tuple-compile sexp ctx)
@@ -300,6 +324,7 @@
     (= sexp.op "yield") (yield-compile sexp)
     (= sexp.op "yield-from") (yield-from-compile sexp)
     (= sexp.op "await") (await-compile sexp)
+    (= sexp.op "f-string") (f-string-compile sexp)
     True (call-compile sexp)))
 
 (defn slice-compile [sexp]

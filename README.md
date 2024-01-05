@@ -20,20 +20,4 @@ hy -m unittest
 
 
 # AST todo
-```
-mod = Module(stmt* body, type_ignore* type_ignores)
-    | Interactive(stmt* body)
-    | Expression(expr body)
-    | FunctionType(expr* argtypes, expr returns)
-
-expr = FormattedValue(expr value, int conversion, expr? format_spec)
-        | JoinedStr(expr* values)
-
-        -- col_offset is the byte offset in the utf8 string the parser uses
-        attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
-
-type_ignore = TypeIgnore(int lineno, string tag)
-```
-
-Implemented Components are removed   
 - type_comment never considered. Later, it should be covered

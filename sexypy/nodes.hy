@@ -100,6 +100,30 @@
   (defn operands-generate [self in-quasi]
     (self.value.generator-expression in-quasi)))
 
+(defclass FStrExpr [Wrapper]
+  (defn __init__ [self value #** kwargs]
+    (.__init__ (super) #** kwargs)
+    (setv self.value value
+          self.classname "FStrExpr")
+    None)
+
+  (defn __repr__ [self]
+    (+ "FStrExpr("
+       (repr self.value)
+       ")"))
+
+  (defn __str__ [self]
+    (+ "(FStrExpr "
+       (str self.value)
+       ")"))
+
+  (defn [property] name [self]
+    self.value.name)
+
+  (defn update-dict [self key value]
+    (setv (get self.__dict__ key) value)
+    (.update-dict self.value key value)))
+
 (defclass Annotation [Wrapper]
   (defn __init__ [self value #** kwargs]
     (.__init__ (super) #** kwargs)
