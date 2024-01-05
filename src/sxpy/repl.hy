@@ -2,9 +2,9 @@
 
 (import ast)
 
-(import sexypy.parser *)
-(import sexypy.compiler *)
-(import sexypy.macro [macroexpand-then-compile])
+(import sxpy.parser *)
+(import sxpy.compiler *)
+(import sxpy.macro [macroexpand-then-compile])
 
 (defn ast-to-python [st]
   (str (ast.unparse st)))

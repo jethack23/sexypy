@@ -7,8 +7,8 @@
 
 (import toolz [identity])
 
-(import sexypy.nodes *
-        sexypy.utils [augassignop-dict])
+(import sxpy.nodes *
+        sxpy.utils [augassignop-dict])
 
 ;;; tokenizer for future which aware of lienno and offset
 (defn tokenize [src]

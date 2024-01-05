@@ -7,9 +7,9 @@
   functools [reduce])
 
 (import
-  sexypy.compiler.literal *
-  sexypy.compiler.utils *
-  sexypy.utils *)
+  sxpy.compiler.literal *
+  sxpy.compiler.utils *
+  sxpy.utils *)
 
 (defn tuple-p [sexp]
   (= (str sexp.op) ","))

@@ -3,10 +3,10 @@
 (import collections [deque])
 (import functools [reduce])
 
-(import sexypy.compiler.expr [expr-compile
+(import sxpy.compiler.expr [expr-compile
                               def-args-parse]
-        sexypy.compiler.utils *
-        sexypy.utils *)
+        sxpy.compiler.utils *
+        sxpy.utils *)
 
 (defn expr-wrapper [sexp]
   (ast.Expr :value (expr-compile sexp)

@@ -5,8 +5,8 @@
 (import functools [reduce])
 
 (import
-  sexypy.nodes *
-  sexypy.compiler [def-args-parse
+  sxpy.nodes *
+  sxpy.compiler [def-args-parse
                    stmt-list-compile])
 
 

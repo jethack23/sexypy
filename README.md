@@ -5,9 +5,9 @@ Once I loved to use Hy when I need to use python. But as I started to learn Cloj
 
 # Run REPL
 ```bash
-hy -m sexypy.repl
+hy -m sxpy.repl
 #or
-python -m sexypy.repl
+python -m sxpy.repl
 ```
 
 # Run Tests

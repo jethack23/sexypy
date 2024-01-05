@@ -3,7 +3,7 @@
 (import ast)
 (import unittest)
 
-(import sexypy.sx2py [src-to-python])
+(import sxpy.sx2py [src-to-python])
 (import .utils [stmt-to-dump])
 
 (defmacro self-retrieval-assert [src]

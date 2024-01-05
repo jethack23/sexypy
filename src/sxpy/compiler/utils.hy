@@ -1,7 +1,7 @@
 (import ast)
 (import collections [deque])
 
-(import sexypy.nodes *)
+(import sxpy.nodes *)
 
 (defn paren-p [sexp]
   (isinstance sexp Paren))

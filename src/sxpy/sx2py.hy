@@ -4,9 +4,9 @@
 (import os.path :as osp)
 (import subprocess)
 
-(import sexypy.parser [parse]
-        sexypy.macro [macroexpand-then-compile]
-        sexypy.repl [ast-to-python])
+(import sxpy.parser [parse]
+        sxpy.macro [macroexpand-then-compile]
+        sxpy.repl [ast-to-python])
 
 (defn src-to-python [src]
   (.join "\n" (map ast-to-python (-> src
