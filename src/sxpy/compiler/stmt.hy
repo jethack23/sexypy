@@ -67,7 +67,7 @@
     (setv n (q.popleft))
     (if (= n "as")
         (setv (. (get rst -1) asname) (str (q.popleft)))
-        (rst.append (ast.alias :name (str n) #** n.position-info))))
+        (rst.append (ast.alias :name n.name #** n.position-info))))
   rst)
 
 (defn import-compile [sexp]
