@@ -14,9 +14,11 @@
 (defn tokenize [src]
   (setv lines (.split src "\n")
         tokens (deque [])
-        int-simple r"\d+"
-        float-simples [r"\d+\.\d*" r"\d*\.\d+"]
-        scientific-simples (list (map (fn [x] (+ x r"e[\-\+]?\d+"))
+        int-simple r"\d+(?:_\d+)*"
+        float-simples [r"\d+(?:_\d+)*\.\d+(?:_\d+)*"
+                       r"\d+(?:_\d+)*\.\d*"
+                       r"\d*\.\d+(?:_\d+)*"]
+        scientific-simples (list (map (fn [x] (+ x r"e[\-\+]?\d+(?:_\d+)*"))
                                       (+ float-simples [int-simple])))
         number-simple (.join "|" (+ scientific-simples float-simples [int-simple]))
         complex-simple fr"(?:(?:{number-simple})[+-])?(?:{number-simple})j"
