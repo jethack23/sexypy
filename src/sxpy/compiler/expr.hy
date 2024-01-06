@@ -129,7 +129,7 @@
   (setv [method instance #* operands] sexp.list
         [args keywords] (call-args-parse operands)
         func (ast.Attribute :value (expr-compile instance)
-                            :attr (get (str method) (slice 1 None))
+                            :attr (get method.name (slice 1 None))
                             :ctx (ast.Load)
                             #** (merge-position-infos method.position-info
                                                       instance.position-info)))
