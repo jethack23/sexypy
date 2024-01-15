@@ -2,8 +2,10 @@
 
 (import ast)
 (import argparse)
+(import io)
 (import os)
 (import os.path :as osp)
+(import runpy)
 (import subprocess)
 
 (import black)
@@ -40,14 +42,33 @@
                            "\n")))
   (print blacked))
 
-(defn run-sy [file]
-  (with [f (open file "r")]
-    (exec (compile (ast.Module :body (macroexpand-then-compile
-                                       (parse (f.read)))
-                               :type-ignores [])
-                   (osp.basename file)
-                   "exec")
-          (globals))))
+(defn _is-sy-file [filename]
+  (and (osp.isfile filename)
+       (in (get (osp.splitext filename) 1) [".sy"])))
+
+;;; runpy injection
+(defn inject-runpy []
+  (setv _org-get-code-from-file runpy._get_code_from_file)
+  
+  (defn _get-sy-code-from-file [run-name fname]
+    (import pkgutil [read-code])
+    (setv decoded-path (osp.abspath (os.fsdecode fname)))
+
+    (with [f (io.open-code decoded-path)]
+      (setv code (read-code f)))
+
+    (when (is code None)
+      (setv code (if (_is-sy-file fname)
+                     (with [f (open decoded-path "r")]
+                       (-> (f.read)
+                           (parse)
+                           (macroexpand-then-compile)
+                           (ast.Module :type-ignores [])
+                           (compile fname "exec")))
+                     (get (_org-get-code-from-file run-name fname) 0))))
+    [code fname])
+  
+  (setv runpy._get_code_from_file _get-sy-code-from-file))
 
 (defn repl [translate]
   (while True
@@ -73,5 +94,6 @@
 (defn run []
   (setv args (argparser.parse-args))
   (if args.filename
-      (run-sy args.filename)
-      (repl args.translate)))
+      (runpy.run-path args.filename :run-name "__main__")
+      (repl args.translate))
+  None)
