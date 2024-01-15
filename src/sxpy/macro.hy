@@ -64,7 +64,11 @@
                   sexp)))
         True sexp))
 
+(defn sexp-list-expand [sexp-list]
+  (filter (fn [x] (not (is x None)))
+          (map macroexpand sexp-list)))
 
 (defn macroexpand-then-compile [sexp-list]
-  (stmt-list-compile (filter (fn [x] (not (is x None)))
-                             (map macroexpand sexp-list))))
+  (-> sexp-list
+      (sexp-list-expand)
+      (stmt-list-compile)))
