@@ -31,6 +31,10 @@
                         :const True
                         :default False)
 
+(argparser.add-argument "-m"
+                        :dest "module_name"
+                        :action "store")
+
 (defn transcompile []
   (setv args (argparser.parse-args)
         file (osp.join (os.getcwd) args.filename))
@@ -94,7 +98,12 @@
 
 (defn run []
   (setv args (argparser.parse-args))
-  (if args.filename
-      (runpy.run-path args.filename :run-name "__main__")
-      (repl args.translate))
+  (cond args.filename
+        (runpy.run-path args.filename :run-name "__main__")
+
+        args.module-name
+        (runpy.run-module args.module-name :run-name "__main__" :alter-sys True)
+        
+        True
+        (repl args.translate))
   None)
