@@ -198,7 +198,7 @@ def assert_compile(sexp):
 
 def parse_exception_bracket(bracket):
     lst = bracket.list
-    name = str([lst.pop(), lst.pop()][1]) if len(lst) > 2 and lst[-2] == "as" else None
+    name = str([lst.pop(), lst.pop()][0]) if len(lst) > 2 and lst[-2] == "as" else None
     type = (
         ast.Tuple(
             elts=list(map(expr_compile, lst)), ctx=ast.Load(), **bracket.position_info
