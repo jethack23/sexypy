@@ -13,9 +13,8 @@ class SyFinder(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if path is None:
             path = []
-        else:
+        elif not isinstance(path, list):
             path = [path]
-
         path_extension = [os.getcwd()] + sys.path
         path += path_extension
 
