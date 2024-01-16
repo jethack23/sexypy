@@ -4,6 +4,7 @@
 (import os)
 (import os.path as osp)
 (import runpy)
+(import sys)
 
 (import black)
 
@@ -99,10 +100,21 @@
 
 (def run []
   (= args (argparser.parse-args))
-  (cond args.filename
-        (runpy.run-path args.filename :run-name "__main__")
 
-        args.module-name
-        (runpy.run-module args.module-name :run-name "__main__" :alter-sys True)
+  ;; remove options from sys.argv
+  (= argv sys.argv)
+  (= option-removed [])
+  (while argv
+    (if (.startswith (:= larg (argv.pop)) "-")
+        (= option-removed [])
+        (option-removed.append larg)))
+  (while option-removed
+    (argv.append (option-removed.pop)))
+  
+  (cond (:= fname args.filename)
+        (runpy.run-path fname :run-name "__main__")
+
+        (:= mname args.module-name)
+        (runpy.run-module mname :run-name "__main__" :alter-sys True)
 
         (repl args.translate)))

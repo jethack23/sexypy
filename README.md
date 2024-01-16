@@ -26,7 +26,7 @@ It just displays translation. (don't run it)
 # in project root directory
 python -m unittest
 #or
-hy -m unittest
+spy -m unittest
 ```
 
 
