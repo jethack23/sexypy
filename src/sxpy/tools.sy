@@ -1,0 +1,108 @@
+(import ast)
+(import argparse)
+(import io)
+(import os)
+(import os.path as osp)
+(import runpy)
+
+(import black)
+
+(from sxpy.parser [parse])
+(from sxpy.macro [macroexpand-then-compile])
+
+(def ast-to-python [st]
+  (return (str (ast.unparse st))))
+
+(def src-to-python [src]
+  (return (.join "\n" (map ast-to-python
+                           (macroexpand-then-compile
+                             (parse src))))))
+
+(= argparser (argparse.ArgumentParser))
+(argparser.add-argument "filename" :nargs "?" :default "")
+(argparser.add-argument "-t" "--translate"
+                        :dest "translate"
+                        :action "store_true"
+                        :default False)
+(argparser.add-argument "-m"
+                        :dest "module_name"
+                        :action "store")
+
+(def transcompile []
+  (= args (argparser.parse-args))
+  (= file (osp.join (os.getcwd) args.filename))
+  (with [(open file "r") as f]
+    (= org (f.read)))
+  (= blacked (.rstrip (black.format-str
+                        (src-to-python org)
+                        :mode (black.FileMode))
+                      "\n"))
+  (print blacked))
+
+(def _is-sy-file [filename]
+  (return (and (osp.isfile filename)
+               (== (sub (osp.splitext filename) 1) ".sy"))))
+
+;;; runpy injection
+(def inject-runpy []
+  (= _org-get-code-from-file runpy._get-code-from-file)
+
+  (def _get-sy-code-from-file [run-name fname]
+    (from pkgutil [read-code])
+    (= decoded-path (osp.abspath (os.fsdecode fname)))
+
+    (with [(io.open-code decoded-path) as f]
+      (= code (read-code f)))
+
+    (if (is code None)
+        (if (_is-sy-file fname)
+            (do (with [(open decoded-path "rb") as f]
+                  (= src (.decode (f.read) "utf-8")))
+                (= parsed (parse src))
+                (= ast-module (ast.Module (macroexpand-then-compile parsed)
+                                          :type-ignores []))
+                (= code (compile ast-module fname "exec")))
+            (= code (sub (_org-get-code-from-file run-name fname) 0))))
+    (return [code fname]))
+
+  (= runpy._get-code-from-file _get-sy-code-from-file))
+
+(def repl [translate]
+  (while True
+    (= line (input "repl > \n"))
+    (= src "")
+    (while (!= line "")
+      (+= src (+ "\n" line))
+      (= line (input ""))
+      (try
+        (do (= parsed (parse src))
+            (= stl (macroexpand-then-compile parsed))
+            (if translate
+                (do (print "python translation")
+                    (print (.join "\n" (list (map ast-to-python stl))))
+                    (print "")))
+            (print "result")
+            (for st stl
+              (eval (compile (ast.Interactive :body [st]) "" "single")
+                    (globals)))
+            (print "\n"))
+        (except [Exception as e]
+          (print "Exception: " e))))))
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(if ~@body))
+        (do (= [test then *orelse] body)
+            (return `(if ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(def run []
+  (= args (argparser.parse-args))
+  (cond args.filename
+        (runpy.run-path args.filename :run-name "__main__")
+
+        args.module-name
+        (runpy.run-module args.module-name :run-name "__main__" :alter-sys True)
+
+        (repl args.translate)))
