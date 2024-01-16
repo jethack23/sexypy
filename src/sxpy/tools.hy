@@ -59,8 +59,9 @@
 
     (when (is code None)
       (setv code (if (_is-sy-file fname)
-                     (with [f (open decoded-path "r")]
+                     (with [f (open decoded-path "rb")]
                        (-> (f.read)
+                           (.decode "utf-8")
                            (parse)
                            (macroexpand-then-compile)
                            (ast.Module :type-ignores [])
