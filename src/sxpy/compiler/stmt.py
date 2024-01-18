@@ -29,7 +29,6 @@ def assign_compile(sexp):
     if isinstance(body[1], Annotation):
         [target, annotation, *value] = body
         value_dict = {"value": expr_compile(value[0])} if value else {}
-        print(target, annotation, repr(target))
         return ast.AnnAssign(
             target=expr_compile(target, ctx=ast.Store),
             annotation=expr_compile(annotation),
