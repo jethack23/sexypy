@@ -152,7 +152,7 @@ def for_p(sexp):
     return str(sexp.op) == "for"
 
 
-def for_compile(sexp, 𝐚sync=False):
+def for_compile(sexp, async_p=False):
     body = deque(sexp.operands)
     target = body.popleft()
     if body[0] == "in":
@@ -164,7 +164,7 @@ def for_compile(sexp, 𝐚sync=False):
         if isinstance(lastx, Paren) and lastx.op == "else"
         else [body, []]
     )
-    return (ast.AsyncFor if 𝐚sync else ast.For)(
+    return (ast.AsyncFor if async_p else ast.For)(
         target=expr_compile(target, ast.Store),
         iter=expr_compile(iterable),
         body=stmt_list_compile(then),
@@ -267,10 +267,10 @@ def with_items_parse(sexp):
     return rst
 
 
-def with_compile(sexp, 𝐚sync=False):
+def with_compile(sexp, async_p=False):
     [bracket_sexp, *body] = sexp.operands
     items = with_items_parse(bracket_sexp)
-    return (ast.AsyncWith if 𝐚sync else ast.With)(
+    return (ast.AsyncWith if async_p else ast.With)(
         items=items, body=stmt_list_compile(body), **sexp.position_info
     )
 
@@ -370,13 +370,13 @@ def functiondef_p(sexp):
     return str(sexp.op) == "def"
 
 
-def functiondef_compile(sexp, decorator_list, 𝐚sync=False):
+def functiondef_compile(sexp, decorator_list, async_p=False):
     [op, fnname, args, *body] = sexp.list
     if body and isinstance(body[0], Annotation):
         [ann, *body] = body
     else:
         ann = None
-    return (ast.AsyncFunctionDef if 𝐚sync else ast.FunctionDef)(
+    return (ast.AsyncFunctionDef if async_p else ast.FunctionDef)(
         name=fnname.name,
         args=def_args_parse(args),
         body=stmt_list_compile(body),
@@ -490,11 +490,11 @@ def stmt_compile(sexp, decorator_list=None):
         if str(sexp.op) == "nonlocal"
         else classdef_compile(sexp, decorator_list)
         if classdef_p(sexp)
-        else functiondef_compile(sexp, decorator_list, 𝐚sync=True)
+        else functiondef_compile(sexp, decorator_list, async_p=True)
         if str(sexp.op) == "async-def"
-        else with_compile(sexp, 𝐚sync=True)
+        else with_compile(sexp, async_p=True)
         if str(sexp.op) == "async-for"
-        else with_compile(sexp, 𝐚sync=True)
+        else with_compile(sexp, async_p=True)
         if str(sexp.op) == "async-with"
         else expr_wrapper(sexp)
     )
