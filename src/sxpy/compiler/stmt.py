@@ -153,7 +153,11 @@ def for_p(sexp):
 
 
 def for_compile(sexp, 𝐚sync=False):
-    [_, target, iterable, *body] = sexp.list
+    body = deque(sexp.operands)
+    target = body.popleft()
+    if body[0] == "in":
+        body.popleft()
+    iterable = body.popleft()
     lastx = body[-1]
     [then, orelse] = (
         [body[:-1], lastx.operands]

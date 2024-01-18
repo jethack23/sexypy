@@ -188,7 +188,8 @@ def parse_comprehensions(generator_body):
     while q:
         is_async = 0 if q.popleft() == "for" else 1
         target = expr_compile(q.popleft(), ctx=ast.Store)
-        _ = q.popleft()
+        if q[0] == "in":
+            q.popleft()
         iter = expr_compile(q.popleft())
         comprehension = ast.comprehension(is_async=is_async, target=target, iter=iter)
         ifs = []
