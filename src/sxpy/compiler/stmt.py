@@ -75,7 +75,7 @@ def del_compile(sexp):
 
 def parse_names(names):
     rst = []
-    q = deque(names)
+    q = deque([names] if names == "*" else names)
     while q:
         n = q.popleft()
         if n == "as":
