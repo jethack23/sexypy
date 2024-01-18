@@ -35,7 +35,6 @@ def define_macro(sexp):
     eval(
         compile(ast.Interactive(body=[def_exp, assign_exp]), "macro-defining", "single")
     )
-    return None
 
 
 def macroexpand(sexp):

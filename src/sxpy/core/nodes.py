@@ -37,7 +37,6 @@ class Expression(Node):
     def __init__(self, *tokens, **kwargs):
         super().__init__(**kwargs)
         self.list = list(tokens)
-        return None
 
     def append(self, t):
         return self.list.append(t)
@@ -135,7 +134,6 @@ class FStrExpr(Wrapper):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "FStrExpr"
-        return None
 
     def __repr__(self):
         return "FStrExpr(" + repr(self.value) + ")"
@@ -157,7 +155,6 @@ class Annotation(Wrapper):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "Annotation"
-        return None
 
     def __repr__(self):
         return "Ann(" + repr(self.value) + ")"
@@ -182,7 +179,6 @@ class Keyword(Wrapper):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "Keyword"
-        return None
 
     def __repr__(self):
         return "Kwd(" + repr(self.value) + ")"
@@ -204,7 +200,6 @@ class Starred(Wrapper):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "Starred"
-        return None
 
     def __repr__(self):
         return "Star(" + repr(self.value) + ")"
@@ -225,7 +220,6 @@ class DoubleStarred(Wrapper):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "DoubleStarred"
-        return None
 
     def __repr__(self):
         return "DStar(" + repr(self.value) + ")"
@@ -251,7 +245,6 @@ class Symbol(Literal):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "Symbol"
-        return None
 
     @property
     def name(self):
@@ -269,7 +262,6 @@ class String(Literal):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "String"
-        return None
 
     def operands_generate(self, in_quasi):
         return String(
@@ -289,7 +281,6 @@ class Constant(Literal):
         super().__init__(**kwargs)
         self.value = value
         self.classname = "Constant"
-        return None
 
     def __repr__(self):
         return "Const(" + repr(self.value) + ")"
@@ -302,7 +293,6 @@ class MetaIndicator(Node):
     def __init__(self, value, **kwargs):
         super().__init__(**kwargs)
         self.value = value
-        return None
 
     def operands_generate(self, in_quasi):
         return self.value.operands_generate(isinstance(self, QuasiQuote))
@@ -312,7 +302,6 @@ class Quote(MetaIndicator):
     def __init__(self, value, **kwargs):
         super().__init__(value, **kwargs)
         self.classname = "Quote"
-        return None
 
     def __repr__(self):
         return "Quote(" + repr(self.value) + ")"
@@ -325,7 +314,6 @@ class QuasiQuote(Quote):
     def __init__(self, value, **kwargs):
         super().__init__(value, **kwargs)
         self.classname = "QuasiQuote"
-        return None
 
     def __repr__(self):
         return "QuasiQuote(" + repr(self.value) + ")"
@@ -338,7 +326,6 @@ class Unquote(MetaIndicator):
     def __init__(self, value, **kwargs):
         super().__init__(value, **kwargs)
         self.classname = "Unquote"
-        return None
 
     def generator_expression(self, in_quasi=False):
         return self.value if in_quasi else self._generator_expression(False)
@@ -354,7 +341,6 @@ class UnquoteSplice(Unquote):
     def __init__(self, value, **kwargs):
         super().__init__(value, **kwargs)
         self.classname = "UnquoteSplice"
-        return None
 
     def generator_expression(self, in_quasi=False):
         return (

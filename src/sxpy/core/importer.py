@@ -29,8 +29,6 @@ class SyFinder(importlib.abc.MetaPathFinder):
                 except FileNotFoundError:
                     pass
 
-        return None
-
 
 class SyLoader(importlib.abc.Loader):
     def exec_module(self, module):
@@ -66,5 +64,3 @@ class SyLoader(importlib.abc.Loader):
                     return self.get_code_from_file(filename)
                 except FileNotFoundError:
                     pass
-
-        return None
