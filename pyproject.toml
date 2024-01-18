@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sexypy"
-version = "0.3.2"
+version = "0.3.3"
 description = "Python with S-expression Grammar"
 authors = ["Jethack"]
 readme = "README.md"
