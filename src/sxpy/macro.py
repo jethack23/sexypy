@@ -1,8 +1,10 @@
 import ast
-from sxpy.nodes import *
-from sxpy.compiler import def_args_parse, stmt_list_compile
+from typing import Callable, Dict
 
-__macro_namespace = {}
+from sxpy.compiler import def_args_parse, stmt_list_compile
+from sxpy.nodes import *
+
+__macro_namespace: Dict[str, Callable[[Node], ast.AST]] = {}
 
 
 def define_macro(sexp):

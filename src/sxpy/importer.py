@@ -1,12 +1,12 @@
 import ast
-import sys
 import importlib
 import importlib.abc
 import io
 import os
+import sys
 
-from sxpy.parser import parse
 from sxpy.macro import macroexpand_then_compile
+from sxpy.parser import parse
 
 
 class SyFinder(importlib.abc.MetaPathFinder):

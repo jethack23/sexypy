@@ -1,6 +1,7 @@
-from collections import deque
 import re
+from collections import deque
 from functools import reduce
+
 from sxpy.nodes import *
 from sxpy.utils import augassignop_dict
 

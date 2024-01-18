@@ -1,6 +1,7 @@
 import ast
 from collections import deque
 from functools import reduce
+
 from sxpy.compiler.literal import *
 from sxpy.compiler.utils import *
 from sxpy.utils import *

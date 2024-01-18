@@ -1,7 +1,8 @@
 import ast
 from collections import deque
 from functools import reduce
-from sxpy.compiler.expr import expr_compile, def_args_parse
+
+from sxpy.compiler.expr import def_args_parse, expr_compile
 from sxpy.compiler.utils import *
 from sxpy.utils import *
 
