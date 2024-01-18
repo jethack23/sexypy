@@ -91,7 +91,7 @@ def call_args_parse(given):
             arg
         ) else args.append(
             expr_compile(arg)
-        ) if True else None
+        )
     return [args, keywords]
 
 
@@ -215,64 +215,51 @@ def def_args_parse(sexp):
     defaults = []
     kwonlyargs = []
     kw_defaults = []
+
+    # before starred
     while q and (not str(q[0]).startswith("*")):
         arg = q.popleft()
         if arg == "/":
             rst.posonlyargs = args
             args = []
-            _hy_anon_var_2 = None
         else:
             ast_arg = ast.arg(arg=arg.name, **arg.position_info)
             if q and isinstance(q[0], Annotation):
                 ast_arg.annotation = expr_compile(q.popleft())
-                _hy_anon_var_1 = None
-            else:
-                _hy_anon_var_1 = None
             args.append(ast_arg)
-            _hy_anon_var_2 = (
+            if keyword_arg_p(arg):
                 defaults.append(expr_compile(q.popleft()))
-                if keyword_arg_p(arg)
-                else None
-            )
     rst.args = args
     rst.defaults = defaults
+
+    # starred
     if q and isinstance(q[0], Starred):
         arg = q.popleft()
         ast_arg = ast.arg(arg=arg.value.name, **arg.position_info)
         if q and isinstance(q[0], Annotation):
             ast_arg.annotation = expr_compile(q.popleft())
-            _hy_anon_var_3 = None
-        else:
-            _hy_anon_var_3 = None
         rst.vararg = ast_arg
-        _hy_anon_var_4 = None
-    else:
-        _hy_anon_var_4 = None
-    q.popleft() if q and q[0] == "*" else None
+    if q and q[0] == "*":
+        q.popleft()
+
+    # before doublestarred
     while q and (not isinstance(q[0], DoubleStarred)):
         arg = q.popleft()
         ast_arg = ast.arg(arg=arg.name, **arg.position_info)
         if q and isinstance(q[0], Annotation):
             ast_arg.annotation = expr_compile(q.popleft())
-            _hy_anon_var_5 = None
-        else:
-            _hy_anon_var_5 = None
         kwonlyargs.append(ast_arg)
         kw_defaults.append(expr_compile(q.popleft()) if keyword_arg_p(arg) else None)
     rst.kwonlyargs = kwonlyargs
     rst.kw_defaults = kw_defaults
+
+    # doublestarred
     if q:
         arg = q.popleft()
         ast_arg = ast.arg(arg=arg.value.name, **arg.position_info)
         if q and isinstance(q[0], Annotation):
             ast_arg.annotation = expr_compile(q.popleft())
-            _hy_anon_var_6 = None
-        else:
-            _hy_anon_var_6 = None
         rst.kwarg = ast_arg
-        _hy_anon_var_7 = None
-    else:
-        _hy_anon_var_7 = None
     return rst
 
 
@@ -366,8 +353,6 @@ def paren_compiler(sexp, ctx):
         else f_string_compile(sexp)
         if sexp.op == "f-string"
         else call_compile(sexp)
-        if True
-        else None
     )
 
 
@@ -379,32 +364,14 @@ def slice_compile(sexp):
         lower = args.popleft()
         if lower != "None" and lower != "_":
             args_dict["lower"] = expr_compile(lower)
-            _hy_anon_var_8 = None
-        else:
-            _hy_anon_var_8 = None
-        _hy_anon_var_9 = _hy_anon_var_8
-    else:
-        _hy_anon_var_9 = None
     if args:
         upper = args.popleft()
         if upper != "None" and upper != "_":
             args_dict["upper"] = expr_compile(upper)
-            _hy_anon_var_10 = None
-        else:
-            _hy_anon_var_10 = None
-        _hy_anon_var_11 = _hy_anon_var_10
-    else:
-        _hy_anon_var_11 = None
     if args:
         step = args.popleft()
         if step != "None" and step != "_":
             args_dict["step"] = expr_compile(step)
-            _hy_anon_var_12 = None
-        else:
-            _hy_anon_var_12 = None
-        _hy_anon_var_13 = _hy_anon_var_12
-    else:
-        _hy_anon_var_13 = None
     return ast.Slice(**args_dict, **sexp.position_info)
 
 
@@ -435,8 +402,6 @@ def bracket_compiler(sexp, ctx):
         else list_comp_compile(sexp)
         if len(sexp) > 1 and str(sexp[1]) in ["for", "async-for"]
         else list_compile(sexp, ctx)
-        if True
-        else None
     )
 
 
@@ -485,8 +450,6 @@ def brace_compiler(sexp):
         else set_compile(sexp)
         if str(sexp.op) == ","
         else dict_compile(sexp)
-        if True
-        else None
     )
 
 
@@ -496,17 +459,11 @@ def metaindicator_p(sexp):
 
 def metaindicator_compile(sexp):
     if isinstance(sexp, Quote):
-        _hy_anon_var_15 = expr_compile(
+        return expr_compile(
             sexp.value.generator_expression(isinstance(sexp, QuasiQuote))
         )
     else:
-        if True:
-            raise ValueError("'unquote' is not allowed here")
-            _hy_anon_var_14 = None
-        else:
-            _hy_anon_var_14 = None
-        _hy_anon_var_15 = _hy_anon_var_14
-    return _hy_anon_var_15
+        raise ValueError("'unquote' is not allowed here")
 
 
 def expr_compile(sexp, ctx=ast.Load):
@@ -528,6 +485,4 @@ def expr_compile(sexp, ctx=ast.Load):
         else metaindicator_compile(sexp)
         if metaindicator_p(sexp)
         else name_compile(sexp, ctx)
-        if True
-        else None
     )

@@ -30,7 +30,7 @@ def assign_compile(sexp):
         [target, annotation, *value] = body
         value_dict = {"value": expr_compile(value[0])} if value else {}
         print(target, annotation, repr(target))
-        _hy_anon_var_1 = ast.AnnAssign(
+        return ast.AnnAssign(
             target=expr_compile(target, ctx=ast.Store),
             annotation=expr_compile(annotation),
             simple=isinstance(target, Symbol) and (not "." in str(target)),
@@ -39,12 +39,11 @@ def assign_compile(sexp):
         )
     else:
         [*targets, value] = body
-        _hy_anon_var_1 = ast.Assign(
+        return ast.Assign(
             targets=list(map(lambda x: expr_compile(x, ctx=ast.Store), targets)),
             value=expr_compile(value),
             **sexp.position_info
         )
-    return _hy_anon_var_1
 
 
 def augassign_p(sexp):
@@ -81,9 +80,8 @@ def parse_names(names):
         n = q.popleft()
         if n == "as":
             rst[-1].asname = str(q.popleft())
-            _hy_anon_var_2 = None
         else:
-            _hy_anon_var_2 = rst.append(ast.alias(name=n.name, **n.position_info))
+            rst.append(ast.alias(name=n.name, **n.position_info))
     return rst
 
 
@@ -94,17 +92,17 @@ def import_compile(sexp):
 
 def importfrom_compile(sexp):
     [_, *args] = sexp.list
-    modules = args[None:None:2]
-    namess = args[1:None:2]
+    modules = args[::2]
+    namess = args[1::2]
 
-    def _hy_anon_var_3(module):
+    def helper(module):
         i = 0
         x = module.name
         while x[i] == ".":
             i += 1
-        return [x[i:None:None], i, module.position_info]
+        return [x[i:], i, module.position_info]
 
-    module_level = map(_hy_anon_var_3, modules)
+    module_level = map(helper, modules)
     return [
         ast.ImportFrom(
             module=module,
@@ -138,7 +136,7 @@ def while_compile(sexp):
     [_, test, *body] = sexp.list
     lastx = body[-1]
     [then, orelse] = (
-        [body[None:-1:None], lastx.operands]
+        [body[:-1], lastx.operands]
         if isinstance(lastx, Paren) and lastx.op == "else"
         else [body, []]
     )
@@ -158,7 +156,7 @@ def for_compile(sexp, 𝐚sync=False):
     [_, target, iterable, *body] = sexp.list
     lastx = body[-1]
     [then, orelse] = (
-        [body[None:-1:None], lastx.operands]
+        [body[:-1], lastx.operands]
         if isinstance(lastx, Paren) and lastx.op == "else"
         else [body, []]
     )
@@ -181,9 +179,6 @@ def raise_compile(sexp):
     kwargs = {"exc": expr_compile(body[0])}
     if len(body) > 1:
         kwargs["cause"] = expr_compile(body[-1])
-        _hy_anon_var_4 = None
-    else:
-        _hy_anon_var_4 = None
     return ast.Raise(**kwargs, **sexp.position_info)
 
 
@@ -191,9 +186,6 @@ def assert_compile(sexp):
     kwargs = {"test": expr_compile(sexp[1])}
     if len(sexp) > 2:
         kwargs["msg"] = expr_compile(sexp[2])
-        _hy_anon_var_5 = None
-    else:
-        _hy_anon_var_5 = None
     return ast.Assert(**kwargs, **sexp.position_info)
 
 
@@ -214,40 +206,37 @@ def parse_except(handler):
     body = handler.operands
     if isinstance(body[0], Bracket):
         body = deque(handler.operands)
-        _hy_anon_var_6 = parse_exception_bracket(body.popleft())
+        [type, name] = parse_exception_bracket(body.popleft())
     else:
-        _hy_anon_var_6 = [None, None]
-    [type, name] = _hy_anon_var_6
+        [type, name] = [None, None]
     kwargs = {"body": stmt_list_compile(body)}
     if type:
         kwargs["type"] = type
-        _hy_anon_var_7 = None
-    else:
-        _hy_anon_var_7 = None
     if name:
         kwargs["name"] = name
-        _hy_anon_var_8 = None
-    else:
-        _hy_anon_var_8 = None
     return ast.ExceptHandler(**kwargs, **handler.position_info)
 
 
 def try_compile(sexp):
     body = sexp.operands
+    # finally
     finalbody = (
         body.pop().operands
         if isinstance(body[-1], Paren) and body[-1].op == "finally"
         else []
     )
+    # else
     orelse = (
         body.pop().operands
         if isinstance(body[-1], Paren) and body[-1].op == "else"
         else []
     )
+    # excepts
     handlers = deque()
     while isinstance(body[-1], Paren) and body[-1].op == "except":
         handlers.appendleft(body.pop())
     handlers = list(map(parse_except, handlers))
+    # except*s
     starhandlers = deque()
     while isinstance(body[-1], Paren) and body[-1].op == "except*":
         starhandlers.appendleft(body.pop())
@@ -269,9 +258,8 @@ def with_items_parse(sexp):
         elt = q.popleft()
         if str(elt) == "as":
             rst[-1].optional_vars = expr_compile(q.popleft(), ctx=ast.Store)
-            _hy_anon_var_9 = None
         else:
-            _hy_anon_var_9 = rst.append(ast.withitem(context_expr=expr_compile(elt)))
+            rst.append(ast.withitem(context_expr=expr_compile(elt)))
     return rst
 
 
@@ -284,14 +272,11 @@ def with_compile(sexp, 𝐚sync=False):
 
 
 def match_mapping_parse(lst):
-    keys = lst[None:None:2]
-    patterns = lst[1:None:2]
+    keys = lst[::2]
+    patterns = lst[1::2]
     rst = {}
     if isinstance(keys[-1], DoubleStarred):
         rst["rest"] = keys.pop().value.name
-        _hy_anon_var_10 = None
-    else:
-        _hy_anon_var_10 = None
     rst["keys"] = list(map(expr_compile, keys))
     rst["patterns"] = list(map(pattern_parse, patterns))
     return rst
@@ -306,9 +291,9 @@ def match_class_parse(lst):
         arg = q.popleft()
         if isinstance(arg, Keyword):
             kwd_attrs.append(arg.value.name)
-            _hy_anon_var_11 = kwd_patterns.append(pattern_parse(q.popleft()))
+            kwd_patterns.append(pattern_parse(q.popleft()))
         else:
-            _hy_anon_var_11 = patterns.append(pattern_parse(arg))
+            patterns.append(pattern_parse(arg))
     return {"patterns": patterns, "kwd_attrs": kwd_attrs, "kwd_patterns": kwd_patterns}
 
 
@@ -342,8 +327,6 @@ def pattern_parse(sexp):
             **match_class_parse(sexp.operands),
             **sexp.position_info
         )
-        if True
-        else None
     )
 
 
@@ -356,17 +339,12 @@ def case_parse(case):
             name=body[1].name,
             **merge_position_infos(pattern_expr.position_info, body[1].position_info)
         )
-        body = body[2:None:None]
-        _hy_anon_var_12 = None
-    else:
-        _hy_anon_var_12 = None
+        body = body[2:]
     if body[0] == "if":
         guard_dict = {"guard": expr_compile(body[1])}
-        body = body[2:None:None]
-        _hy_anon_var_13 = None
+        body = body[2:]
     else:
         guard_dict = {}
-        _hy_anon_var_13 = None
     return ast.match_case(pattern=pattern, **guard_dict, body=stmt_list_compile(body))
 
 
@@ -392,10 +370,8 @@ def functiondef_compile(sexp, decorator_list, 𝐚sync=False):
     [op, fnname, args, *body] = sexp.list
     if body and isinstance(body[0], Annotation):
         [ann, *body] = body
-        _hy_anon_var_14 = None
     else:
         ann = None
-        _hy_anon_var_14 = None
     return (ast.AsyncFunctionDef if 𝐚sync else ast.FunctionDef)(
         name=fnname.name,
         args=def_args_parse(args),
@@ -517,8 +493,6 @@ def stmt_compile(sexp, decorator_list=None):
         else with_compile(sexp, 𝐚sync=True)
         if str(sexp.op) == "async-with"
         else expr_wrapper(sexp)
-        if True
-        else None
     )
 
 

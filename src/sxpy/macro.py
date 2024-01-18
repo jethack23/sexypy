@@ -41,30 +41,17 @@ def define_macro(sexp):
 def macroexpand(sexp):
     if isinstance(sexp, Wrapper) or isinstance(sexp, MetaIndicator):
         sexp.value = macroexpand(sexp.value)
-        _hy_anon_var_5 = sexp
-    else:
-        if isinstance(sexp, Expression) and len(sexp) > 0:
-            [op, *operands] = sexp.list
-            if str(op) == "defmacro":
-                _hy_anon_var_3 = define_macro(sexp)
-            else:
-                if str(op) in __macro_namespace:
-                    _hy_anon_var_2 = macroexpand(__macro_namespace[str(op)](*operands))
-                else:
-                    if True:
-                        sexp.list = list(
-                            filter(lambda x: not x is None, map(macroexpand, sexp.list))
-                        )
-                        _hy_anon_var_1 = sexp
-                    else:
-                        _hy_anon_var_1 = None
-                    _hy_anon_var_2 = _hy_anon_var_1
-                _hy_anon_var_3 = _hy_anon_var_2
-            _hy_anon_var_4 = _hy_anon_var_3
+    elif isinstance(sexp, Expression) and len(sexp) > 0:
+        [op, *operands] = sexp.list
+        if str(op) == "defmacro":
+            sexp = define_macro(sexp)
+        elif str(op) in __macro_namespace:
+            sexp = macroexpand(__macro_namespace[str(op)](*operands))
         else:
-            _hy_anon_var_4 = sexp if True else None
-        _hy_anon_var_5 = _hy_anon_var_4
-    return _hy_anon_var_5
+            sexp.list = list(
+                filter(lambda x: not x is None, map(macroexpand, sexp.list))
+            )
+    return sexp
 
 
 def sexp_list_expand(sexp_list):

@@ -111,8 +111,8 @@ def parse(src):
             position_info
         )
         if tktype == "opening":
-            _hy_anon_var_4 = stack.append(
-                opening_prefix_dict[t[None:-1:None]](
+            stack.append(
+                opening_prefix_dict[t[:-1]](
                     value=opening_dict[t[-1]](
                         lineno=lineno, col_offset=col_offset + (len(t) - 1)
                     ),
@@ -120,33 +120,24 @@ def parse(src):
                     col_offset=col_offset,
                 )
             )
+        elif tktype == "meta-indicator":
+            stack.append(
+                meta_indicator_dict[t](value=None, lineno=lineno, col_offset=col_offset)
+            )
         else:
-            if tktype == "meta-indicator":
-                _hy_anon_var_3 = stack.append(
-                    meta_indicator_dict[t](
-                        value=None, lineno=lineno, col_offset=col_offset
-                    )
-                )
+            if tktype == "closing":
+                e = stack.pop()
+                e.update_dict("end_lineno", end_lineno)
+                e.update_dict("end_col_offset", end_col_offset)
             else:
-                if True:
-                    if tktype == "closing":
-                        e = stack.pop()
-                        e.update_dict("end_lineno", end_lineno)
-                        _hy_anon_var_1 = e.update_dict("end_col_offset", end_col_offset)
-                    else:
-                        e = token_parse(t, tktype, position_info)
-                        _hy_anon_var_1 = None
-                    while stack and isinstance(stack[-1], MetaIndicator):
-                        popped = stack.pop()
-                        popped.value = e
-                        popped.update_dict("end_lineno", end_lineno)
-                        popped.update_dict("end_col_offset", end_col_offset)
-                        e = popped
-                    _hy_anon_var_2 = (stack[-1] if stack else rst).append(e)
-                else:
-                    _hy_anon_var_2 = None
-                _hy_anon_var_3 = _hy_anon_var_2
-            _hy_anon_var_4 = _hy_anon_var_3
+                e = token_parse(t, tktype, position_info)
+            while stack and isinstance(stack[-1], MetaIndicator):
+                popped = stack.pop()
+                popped.value = e
+                popped.update_dict("end_lineno", end_lineno)
+                popped.update_dict("end_col_offset", end_col_offset)
+                e = popped
+            (stack[-1] if stack else rst).append(e)
     return rst
 
 
@@ -174,25 +165,19 @@ def token_parse(token, tktype, position_info):
         else unary_op_parse(token, tktype, position_info)
         if token[0] in "+-"
         else Symbol(token, **position_info)
-        if True
-        else None
     )
 
 
 def annotation_token_parse(token, tktype, position_info):
     inner_position = {**position_info}
     inner_position["col_offset"] += 1
-    return Annotation(
-        token_parse(token[1:None:None], tktype, inner_position), **position_info
-    )
+    return Annotation(token_parse(token[1:], tktype, inner_position), **position_info)
 
 
 def keyword_token_parse(token, tktype, position_info):
     inner_position = {**position_info}
     inner_position["col_offset"] += 1
-    return Keyword(
-        token_parse(token[1:None:None], tktype, inner_position), **position_info
-    )
+    return Keyword(token_parse(token[1:], tktype, inner_position), **position_info)
 
 
 def star_token_parse(token, tktype, position_info):
@@ -254,18 +239,14 @@ def f_string_parse(prefix, content, tktype, position_info):
             if ":" in piece:
                 [*quarks, format_spec] = piece.split(":")
                 piece = ":".join(quarks)
-                _hy_anon_var_5 = None
             else:
                 format_spec = None
-                _hy_anon_var_5 = None
-            if piece[-2:None:None] in conversion_dict:
-                conversion = conversion_dict[piece[-2:None:None]]
-                piece = piece[None:-2:None]
-                _hy_anon_var_6 = None
+            if piece[-2:] in conversion_dict:
+                conversion = conversion_dict[piece[-2:]]
+                piece = piece[:-2]
             else:
                 conversion = -1
-                _hy_anon_var_6 = None
-            _hy_anon_var_7 = processed.append(
+            processed.append(
                 FStrExpr(
                     parse(piece).pop(),
                     conversion=conversion,
@@ -274,7 +255,7 @@ def f_string_parse(prefix, content, tktype, position_info):
                 )
             )
         else:
-            _hy_anon_var_7 = processed.append(
+            processed.append(
                 string_parse(prefix + tktype + piece + tktype, tktype, position_info)
             )
     return Paren(Symbol("f-string", **position_info), *processed)
