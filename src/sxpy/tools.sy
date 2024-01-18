@@ -7,6 +7,7 @@
 (import sys)
 
 (import black)
+(import isort)
 
 (from sxpy.parser [parse])
 (from sxpy.macro [macroexpand-then-compile])
@@ -38,7 +39,8 @@
                         (src-to-python org)
                         :mode (black.FileMode))
                       "\n"))
-  (print blacked))
+  (= isorted (isort.code blacked))
+  (print isorted))
 
 (def _is-sy-file [filename]
   (return (and (osp.isfile filename)
