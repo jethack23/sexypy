@@ -9,8 +9,8 @@
 (import black)
 (import isort)
 
-(from sxpy.parser [parse])
-(from sxpy.macro [macroexpand-then-compile])
+(from sxpy.core.parser [parse])
+(from sxpy.core.macro [macroexpand-then-compile])
 
 (def ast-to-python [st]
   (return (str (ast.unparse st))))

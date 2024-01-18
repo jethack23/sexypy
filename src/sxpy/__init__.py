@@ -1,6 +1,6 @@
 import sys
 
-from sxpy.importer import SyFinder
+from sxpy.core.importer import SyFinder
 
 sys.meta_path.append(SyFinder())
 

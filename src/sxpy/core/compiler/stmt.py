@@ -2,9 +2,9 @@ import ast
 from collections import deque
 from functools import reduce
 
-from sxpy.compiler.expr import def_args_parse, expr_compile
-from sxpy.compiler.utils import *
-from sxpy.utils import *
+from sxpy.core.compiler.expr import def_args_parse, expr_compile
+from sxpy.core.compiler.utils import *
+from sxpy.core.utils import *
 
 
 def expr_wrapper(sexp):

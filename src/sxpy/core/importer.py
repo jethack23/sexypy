@@ -5,8 +5,8 @@ import io
 import os
 import sys
 
-from sxpy.macro import macroexpand_then_compile
-from sxpy.parser import parse
+from sxpy.core.macro import macroexpand_then_compile
+from sxpy.core.parser import parse
 
 
 class SyFinder(importlib.abc.MetaPathFinder):

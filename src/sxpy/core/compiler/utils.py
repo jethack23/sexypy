@@ -1,7 +1,7 @@
 import ast
 from collections import deque
 
-from sxpy.nodes import *
+from sxpy.core.nodes import *
 
 
 def paren_p(sexp):

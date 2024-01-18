@@ -2,9 +2,9 @@ import ast
 from collections import deque
 from functools import reduce
 
-from sxpy.compiler.literal import *
-from sxpy.compiler.utils import *
-from sxpy.utils import *
+from sxpy.core.compiler.literal import *
+from sxpy.core.compiler.utils import *
+from sxpy.core.utils import *
 
 
 def tuple_p(sexp):

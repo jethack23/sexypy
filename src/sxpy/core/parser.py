@@ -2,8 +2,8 @@ import re
 from collections import deque
 from functools import reduce
 
-from sxpy.nodes import *
-from sxpy.utils import augassignop_dict
+from sxpy.core.nodes import *
+from sxpy.core.utils import augassignop_dict
 
 
 def tokenize(src):
