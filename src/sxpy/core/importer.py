@@ -4,6 +4,7 @@ import importlib.abc
 import io
 import os
 import sys
+from collections.abc import Iterable
 
 from sxpy.core.macro import macroexpand_then_compile
 from sxpy.core.parser import parse
@@ -13,8 +14,10 @@ class SyFinder(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if path is None:
             path = []
-        elif not isinstance(path, list):
+        elif not isinstance(path, Iterable):
             path = [path]
+        elif not isinstance(path, list):
+            path = list(path)
         path_extension = [os.getcwd()] + sys.path
         path += path_extension
 
