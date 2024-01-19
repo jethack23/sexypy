@@ -1,7 +1,7 @@
 import ast
 import unittest
 
-from sxpy.core.tools import src_to_python
+from sxpy.tools import src_to_python
 
 from .utils import stmt_to_dump
 

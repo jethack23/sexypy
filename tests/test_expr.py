@@ -1,6 +1,6 @@
 import unittest
 
-from sxpy.core.tools import parse, src_to_python
+from sxpy.tools import parse, src_to_python
 
 
 class TestUnaryOpMethods(unittest.TestCase):
