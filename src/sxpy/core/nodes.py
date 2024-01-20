@@ -1,3 +1,10 @@
+from collections import deque
+
+
+def multiline_p(s):
+    return len(s.split("\n")) > 1
+
+
 class Node:
     def __init__(self, *args, **kwargs):
         self.lineno = 0
@@ -28,6 +35,9 @@ class Node:
 
     def generator_expression(self, in_quasi=False):
         return self._generator_expression(in_quasi)
+
+    def __str__(self):
+        return self.get_source()
 
     def __eq__(self, other):
         return str(self) == other
@@ -72,10 +82,6 @@ class Expression(Node):
         return self.list[slice(1, None)]
 
 
-openings = {"Paren": "(", "Bracket": "[", "Brace": "{"}
-closings = {"Paren": ")", "Bracket": "]", "Brace": "}"}
-
-
 class Paren(Expression):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -84,12 +90,60 @@ class Paren(Expression):
     def __repr__(self, depth=0):
         return "Paren" + "(" + ", ".join([repr(e) for e in self.list]) + ")"
 
-    def __str__(self):
-        return (
-            openings["Paren"]
-            + " ".join([str(e) for e in self.list])
-            + closings["Paren"]
-        )
+    def get_source(self, indent=0):
+        return "(" + " ".join([str(e) for e in self.list]) + ")"
+
+
+def list_format(q, indent=0, col_max=10):
+    rst = ""
+    cur = indent - 1
+    need_newline = False
+    cnt = 0
+    while q:
+        e = q.popleft()
+        if need_newline:
+            need_newline = False
+            rst += "\n" + " " * indent
+            cur = indent
+        else:
+            rst += " "
+            cur += 1
+        e_src = e.get_source(cur)
+        rst += e_src
+        if multiline_p(e_src) or cnt == col_max - 1:
+            need_newline = True
+            cnt = 0
+        else:
+            cnt = (cnt + 1) % col_max
+            cur += len(e_src)
+    return rst[1:]
+
+
+def comprehension_format(q, org_indent=0):
+    rst = str(q.popleft())
+    indent = org_indent
+    cur = indent + len(rst)
+    need_newline = False
+    while q:
+        e = q.popleft()
+        e_src = e.get_source(cur)
+        if need_newline:
+            need_newline = False
+            rst += "\n" + " " * indent
+            cur = indent
+        elif str(e) in ["for", "async-for"]:
+            rst += "\n" + " " * org_indent
+            cur = org_indent
+            indent = org_indent + len(e_src)
+        else:
+            rst += " "
+            cur += 1
+        rst += e_src
+        if multiline_p(e_src):
+            need_newline = True
+        else:
+            cur += len(e_src)
+    return rst
 
 
 class Bracket(Expression):
@@ -100,12 +154,28 @@ class Bracket(Expression):
     def __repr__(self, depth=0):
         return "Bracket" + "(" + ", ".join([repr(e) for e in self.list]) + ")"
 
-    def __str__(self):
-        return (
-            openings["Bracket"]
-            + " ".join([str(e) for e in self.list])
-            + closings["Bracket"]
-        )
+    def get_source(self, indent=0):
+        rst = "["
+        indent += 1
+        if len(self):
+            q = deque(self.list)
+            if str(self.op) == ":":
+                rst += ": "
+                indent += 2
+                q.popleft()
+                rst += list_format(q, indent)
+            elif len(q) > 1 and str(q[1]) in ["for", "async-for"]:
+                e_src = q.popleft().get_source(indent)
+                rst += e_src
+                if multiline_p(e_src):
+                    rst += "\n" + " " * indent
+                else:
+                    rst += " "
+                    indent += len(e_src) + 1
+                rst += comprehension_format(q, indent)
+            else:
+                rst += list_format(q, indent)
+        return rst + "]"
 
 
 class Brace(Expression):
@@ -116,12 +186,48 @@ class Brace(Expression):
     def __repr__(self, depth=0):
         return "Brace" + "(" + ", ".join([repr(e) for e in self.list]) + ")"
 
-    def __str__(self):
-        return (
-            openings["Brace"]
-            + " ".join([str(e) for e in self.list])
-            + closings["Brace"]
-        )
+    def get_source(self, indent=0):
+        rst = "{"
+        indent += 1
+        cur = indent
+        if len(self):
+            q = deque(self.list)
+            if len(q) > 2 and str(q[2]) in ["for", "async-for"]:
+                any_multiline = False
+                for _ in range(2):
+                    e_src = q.popleft().get_source(indent)
+                    rst += e_src
+                    if any_multiline or multiline_p(e_src):
+                        any_multiline = True
+                        rst += "\n" + " " * indent
+                        cur = indent
+                    else:
+                        rst += " "
+                        cur += len(e_src) + 1
+                rst += comprehension_format(q, cur)
+            elif str(self.op) == ",":
+                rst += ", "
+                indent += 2
+                q.popleft()
+                rst += list_format(q, indent)
+            else:
+                while q:
+                    any_multiline = False
+                    for _ in range(2):
+                        e_src = q.popleft().get_source(indent)
+                        rst += e_src
+                        if not q:
+                            break
+                        elif any_multiline or multiline_p(e_src):
+                            any_multiline = True
+                            rst += "\n" + " " * indent
+                            cur = indent
+                        else:
+                            rst += " "
+                            cur += len(e_src) + 1
+                    if q and any_multiline:
+                        rst += "\n" + " " * indent
+        return rst + "}"
 
 
 class Wrapper(Node):
@@ -138,7 +244,7 @@ class FStrExpr(Wrapper):
     def __repr__(self):
         return "FStrExpr(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "(FStrExpr " + str(self.value) + ")"
 
     @property
@@ -159,7 +265,7 @@ class Annotation(Wrapper):
     def __repr__(self):
         return "Ann(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "^" + str(self.value)
 
     def append(self, e):
@@ -183,7 +289,7 @@ class Keyword(Wrapper):
     def __repr__(self):
         return "Kwd(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return ":" + str(self.value)
 
     @property
@@ -204,7 +310,7 @@ class Starred(Wrapper):
     def __repr__(self):
         return "Star(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "*" + str(self.value)
 
     def append(self, e):
@@ -224,7 +330,7 @@ class DoubleStarred(Wrapper):
     def __repr__(self):
         return "DStar(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "**" + str(self.value)
 
     def append(self, e):
@@ -253,7 +359,7 @@ class Symbol(Literal):
     def __repr__(self):
         return "Sym(" + self.value + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return self.value
 
 
@@ -272,7 +378,7 @@ class String(Literal):
     def __repr__(self):
         return "Str(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return self.value
 
 
@@ -285,7 +391,7 @@ class Constant(Literal):
     def __repr__(self):
         return "Const(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return str(self.value).replace("'", "")
 
 
@@ -306,7 +412,7 @@ class Quote(MetaIndicator):
     def __repr__(self):
         return "Quote(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "'" + str(self.value)
 
 
@@ -318,7 +424,7 @@ class QuasiQuote(Quote):
     def __repr__(self):
         return "QuasiQuote(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "`" + str(self.value)
 
 
@@ -333,7 +439,7 @@ class Unquote(MetaIndicator):
     def __repr__(self):
         return "Unquote(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "~" + str(self.value)
 
 
@@ -352,5 +458,5 @@ class UnquoteSplice(Unquote):
     def __repr__(self):
         return "UnquoteSplice(" + repr(self.value) + ")"
 
-    def __str__(self):
+    def get_source(self, indent=0):
         return "~@" + str(self.value)
