@@ -9,7 +9,7 @@ __macro_namespace: Dict[str, Callable[[Node], ast.AST]] = {}
 
 def define_macro(sexp):
     [op, macroname, args, *body] = sexp.list
-    new_name = "___macro___" + macroname.value
+    new_name = "___macro___" + str(macroname)
     def_exp = ast.FunctionDef(
         name=new_name,
         args=def_args_parse(args),
@@ -24,7 +24,7 @@ def define_macro(sexp):
                 value=ast.Name(
                     id="__macro_namespace", ctx=ast.Load(), **sexp.position_info
                 ),
-                slice=ast.Constant(value=macroname.value, **sexp.position_info),
+                slice=ast.Constant(value=str(macroname), **sexp.position_info),
                 ctx=ast.Store(),
                 **sexp.position_info
             )
