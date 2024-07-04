@@ -12,6 +12,30 @@
 (from sxpy.core.parser [parse])
 (from sxpy.core.macro [macroexpand-then-compile])
 
+
+
+;;; temporary macro definitions. later, should be imported or required from another file like macros.sy
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(if ~@body))
+        (do (= [test then *orelse] body)
+            (return `(if ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(defmacro -> [x *fs]
+  (if (== 0 (len fs))
+      (return x))
+  (= [f *rest] fs)
+  (if (isinstance f Paren)
+      (do (f.list.insert 1 x)
+          (return `(-> ~f ~@rest)))
+      (return `(-> (~f ~x) ~@rest))))
+
+;;; macro definitions end
+
+
 (def ast-to-python [st]
   (return (str (ast.unparse st))))
 
@@ -92,15 +116,6 @@
       (except [Exception as e]
         (raise e)
         (print "Exception: " e)))))
-
-
-(defmacro cond [*body]
-  (def recur [*body]
-    (if (< (len body) 4)
-        (return `(if ~@body))
-        (do (= [test then *orelse] body)
-            (return `(if ~test ~then ~(recur *orelse))))))
-  (return (recur *body)))
 
 (def run []
   (= args (argparser.parse-args))
