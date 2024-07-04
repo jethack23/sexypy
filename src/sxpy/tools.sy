@@ -76,23 +76,23 @@
     (= src "")
     (while (!= line "")
       (+= src (+ "\n" line))
-      (= line (input ""))
-      (try
-        (do (= parsed (parse src))
-            (= stl (macroexpand-then-compile parsed))
-            (if translate
-                (do (print "python translation")
-                    (print (.join "\n" (list (map ast-to-python stl))))
-                    (print "")))
-            (print "result")
-            (for st stl
-              (eval (compile (ast.Interactive :body [st]) "" "single")
-                    (globals)))
-            (print "\n"))
-        (except [Exception as e]
-          (raise e)
-          (print "Exception: " e))
-        ))))
+      (= line (input "")))
+    (try
+      (do (= parsed (parse src))
+          (= stl (macroexpand-then-compile parsed))
+          (if translate
+              (do (print "python translation")
+                  (print (.join "\n" (list (map ast-to-python stl))))
+                  (print "")))
+          (print "result")
+          (for st stl
+            (eval (compile (ast.Interactive :body [st]) "" "single")
+                  (globals)))
+          (print "\n"))
+      (except [Exception as e]
+        (raise e)
+        (print "Exception: " e)))))
+
 
 (defmacro cond [*body]
   (def recur [*body]
