@@ -38,6 +38,15 @@
     (equal-test "r\"\\n\"" "'\\\\n'")
     (equal-test "\"\\n\"" "'\\n'"))
 
+  (def test-multi-line-string [self]
+    (equal-test "\"a
+b
+c\""
+                "'a\\nb\\nc'")
+    (equal-test "\"
+\""
+                "\'\\n'"))
+
   (def test-f-string [self]
     (self.assertEqual (stmt-to-dump "f\"sin({a}) is {(sin a):.3}\"")
                       (ast.dump (ast.parse "f\"sin({a}) is {sin(a):.3}\"")))))
