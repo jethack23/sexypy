@@ -20,6 +20,9 @@
                            (macroexpand-then-compile
                              (parse src))))))
 
+(def black-src [src]
+  (return (.rstrip (black.format-str src :mode (black.FileMode)) "\n")))
+
 (= argparser (argparse.ArgumentParser))
 (argparser.add-argument "filename" :nargs "?" :default "")
 (argparser.add-argument "-t" "--translate"
@@ -33,12 +36,9 @@
 (def transcompile []
   (= args (argparser.parse-args))
   (= file (osp.join (os.getcwd) args.filename))
-  (with [(open file "r") as f]
-    (= org (f.read)))
-  (= blacked (.rstrip (black.format-str
-                        (src-to-python org)
-                        :mode (black.FileMode))
-                      "\n"))
+  (with [(open file "rb") as f]
+    (= org (.decode (f.read) "utf-8")))
+  (= blacked (black-src (src-to-python org)))
   (= isorted (isort.code blacked))
   (print isorted))
 
@@ -90,7 +90,9 @@
                     (globals)))
             (print "\n"))
         (except [Exception as e]
-          (print "Exception: " e))))))
+          (raise e)
+          (print "Exception: " e))
+        ))))
 
 (defmacro cond [*body]
   (def recur [*body]
