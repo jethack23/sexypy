@@ -1,0 +1,10 @@
+(import ast)
+
+(from sxpy.tools [parse macroexpand-then-compile src-to-python])
+
+(def stmt-to-dump [src]
+  (return (-> src
+              parse
+              macroexpand-then-compile
+              (ast.Module :type-ignores [])
+              ast.dump)))

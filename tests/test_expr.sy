@@ -1,0 +1,48 @@
+(import unittest)
+
+(from sxpy.tools [parse src-to-python])
+
+(class TestUnaryOpMethods [unittest.TestCase]
+
+  (def test-unaryop [self]
+    (self.assertEqual (src-to-python "+2") "+2")))
+
+(class TestBinOpMethods [unittest.TestCase]
+
+  (def test-binop [self]
+    (self.assertEqual (src-to-python "(+ 2 3)") "2 + 3")))
+
+(class TestBoolOpMethods [unittest.TestCase]
+
+  (def test-boolop [self]
+    (self.assertEqual (src-to-python "(and 1 2)") "1 and 2")))
+
+(class TestCompareMethods [unittest.TestCase]
+
+  (def test-eq [self]
+    (self.assertEqual (src-to-python "(== 1 2 3)")
+                      "1 == 2 == 3"))
+
+  (def test-noteq [self]
+    (self.assertEqual (src-to-python "(!= 1 2 3)")
+                       "1 != 2 != 3"))
+
+  (def test-lt [self]
+    (self.assertEqual (src-to-python "(< 1 2 3)")
+                      "1 < 2 < 3"))
+
+  (def test-lte [self]
+    (self.assertEqual (src-to-python "(<= 1 2 3)")
+                      "1 <= 2 <= 3"))
+
+  (def test-gt [self]
+    (self.assertEqual (src-to-python "(> 1 2 3)")
+                      "1 > 2 > 3"))
+  ;; TODO: more tests
+  )
+
+(class TestCallMethods [unittest.TestCase]
+
+  (def test-call [self]
+    ;; dummy test case
+    (self.assertEqual (parse "((a b c) d e)") "asdf")))
