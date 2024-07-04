@@ -40,9 +40,3 @@
                       "1 > 2 > 3"))
   ;; TODO: more tests
   )
-
-(class TestCallMethods [unittest.TestCase]
-
-  (def test-call [self]
-    ;; dummy test case
-    (self.assertEqual (parse "((a b c) d e)") "asdf")))
