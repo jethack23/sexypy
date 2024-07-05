@@ -6,7 +6,10 @@ def constant_compile(constant):
 
 
 def string_compile(string):
-    return ast.Constant(value=eval(string.value.replace("\n", "\\n")), **string.position_info)
+    return ast.Constant(
+        value=eval(string.value.replace("\r\n", "\\n").replace("\n", "\\n")),
+        **string.position_info
+    )
 
 
 def name_compile(symbol, ctx):
