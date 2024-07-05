@@ -78,7 +78,7 @@ def parse_names(names):
     while q:
         n = q.popleft()
         if n == "as":
-            rst[-1].asname = str(q.popleft())
+            rst[-1].asname = str(q.popleft()).replace("-", "_")
         else:
             rst.append(ast.alias(name=n.name, **n.position_info))
     return rst
@@ -194,7 +194,11 @@ def assert_compile(sexp):
 
 def parse_exception_bracket(bracket):
     lst = bracket.list
-    name = str([lst.pop(), lst.pop()][0]) if len(lst) > 2 and lst[-2] == "as" else None
+    name = (
+        str([lst.pop(), lst.pop()][0]).replace("-", "_")
+        if len(lst) > 2 and lst[-2] == "as"
+        else None
+    )
     type = (
         ast.Tuple(
             elts=list(map(expr_compile, lst)), ctx=ast.Load(), **bracket.position_info
@@ -339,7 +343,7 @@ def case_parse(case):
     if body[0] == "as":
         pattern = ast.MatchAs(
             pattern=pattern,
-            name=body[1].name,
+            name=body[1].name.replace("-", "_"),
             **merge_position_infos(pattern_expr.position_info, body[1].position_info)
         )
         body = body[2:]
