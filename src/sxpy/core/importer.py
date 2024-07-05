@@ -1,6 +1,7 @@
 import ast
 import importlib
 import importlib.abc
+import importlib.util
 import io
 import os
 import sys
