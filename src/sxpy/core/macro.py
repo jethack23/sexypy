@@ -52,15 +52,20 @@ def define_macro(sexp, scope):
 
 
 def require_macro(sexp, scope):
-    [op, module_name, macro_names] = sexp.list
+    [op, module_name, *optional] = sexp.list
     imported_macros = importlib.import_module(
         str(module_name).replace("-", "_")
     ).__macro_namespace
-    if str(macro_names) == "*":
-        scope["__macro_namespace"].update(imported_macros)
+    if optional:
+        [macro_names] = optional
+        if str(macro_names) == "*":
+            scope["__macro_namespace"].update(imported_macros)
+        else:
+            for mac_name in map(str, macro_names.list):
+                scope["__macro_namespace"][mac_name] = imported_macros[mac_name]
     else:
-        for mac_name in map(str, macro_names.list):
-            scope["__macro_namespace"][mac_name] = imported_macros[mac_name]
+        for k, v in imported_macros.items():
+            scope["__macro_namespace"][str(module_name) + "." + k] = v
 
 
 def macroexpand(sexp, scope):
