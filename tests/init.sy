@@ -1,5 +1,3 @@
-(from sxpy.core.nodes [Symbol])
-
 (defmacro import-macro [*args]
   (return `(do ~@[`(from ~(Symbol (+ "." x.value)) *)
                   for x

@@ -1,6 +1,8 @@
+(require sxpy.macros *)
+
 (import ast)
 
-(from sxpy.tools [parse macroexpand-then-compile src-to-python])
+(from sxpy.tools [parse macroexpand-then-compile])
 
 (def stmt-to-dump [src]
   (return (-> src

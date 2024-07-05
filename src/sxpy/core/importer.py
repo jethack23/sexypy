@@ -37,10 +37,11 @@ class SyLoader(importlib.abc.Loader):
     def exec_module(self, module):
         if os.path.splitext(module.__file__)[0].endswith("__init__"):
             module.__path__ = os.path.dirname(module.__file__)
-        code = self.get_code_from_file(module.__file__)
+        module.__dict__["__macro_namespace"] = {}
+        code = self.get_code_from_file(module.__file__, module.__dict__)
         exec(code, module.__dict__)
 
-    def get_code_from_file(self, filename):
+    def get_code_from_file(self, filename, scope=globals()):
         from pkgutil import read_code
 
         decoded_path = os.path.abspath(os.fsdecode(filename))
@@ -52,7 +53,9 @@ class SyLoader(importlib.abc.Loader):
                 source = file.read().decode("utf-8")
             if filename.endswith(".sy"):
                 parsed = parse(source)
-                source = ast.Module(macroexpand_then_compile(parsed), type_ignores=[])
+                source = ast.Module(
+                    macroexpand_then_compile(parsed, scope), type_ignores=[]
+                )
             code = compile(source, filename, "exec")
         return code
 

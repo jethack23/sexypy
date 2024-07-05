@@ -1,3 +1,5 @@
+(require sxpy.macros *)
+
 (import ast)
 (import argparse)
 (import io)
@@ -11,30 +13,6 @@
 
 (from sxpy.core.parser [parse])
 (from sxpy.core.macro [macroexpand-then-compile])
-
-
-
-;;; temporary macro definitions. later, should be imported or required from another file like macros.sy
-
-(defmacro cond [*body]
-  (def recur [*body]
-    (if (< (len body) 4)
-        (return `(if ~@body))
-        (do (= [test then *orelse] body)
-            (return `(if ~test ~then ~(recur *orelse))))))
-  (return (recur *body)))
-
-(defmacro -> [x *fs]
-  (if (== 0 (len fs))
-      (return x))
-  (= [f *rest] fs)
-  (if (isinstance f Paren)
-      (do (f.list.insert 1 x)
-          (return `(-> ~f ~@rest)))
-      (return `(-> (~f ~x) ~@rest))))
-
-;;; macro definitions end
-
 
 (def ast-to-python [st]
   (return (str (ast.unparse st))))
@@ -103,7 +81,7 @@
       (= line (input "")))
     (try
       (do (= parsed (parse src))
-          (= stl (macroexpand-then-compile parsed))
+          (= stl (macroexpand-then-compile parsed (globals)))
           (if translate
               (do (print "python translation")
                   (print (.join "\n" (list (map ast-to-python stl))))
