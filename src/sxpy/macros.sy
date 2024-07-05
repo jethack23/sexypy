@@ -14,3 +14,6 @@
       (do (f.list.insert 1 x)
           (return `(-> ~f ~@rest)))
       (return `(-> (~f ~x) ~@rest))))
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
