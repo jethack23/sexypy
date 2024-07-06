@@ -43,10 +43,21 @@ class Node:
         return str(self) == other
 
 
+def data_to_generator_expression(data):
+    if isinstance(data, str):
+        return String('"' + data + '"')
+    elif isinstance(data, list):
+        return Bracket(*data)
+    elif isinstance(data, tuple):
+        return Bracket(*data)
+    else:
+        return data
+
+
 class Expression(Node):
     def __init__(self, *tokens, **kwargs):
         super().__init__(**kwargs)
-        self.list = list(tokens)
+        self.list = list(map(data_to_generator_expression, tokens))
 
     def append(self, t):
         return self.list.append(t)
@@ -401,7 +412,7 @@ class MetaIndicator(Node):
         self.value = value
 
     def operands_generate(self, in_quasi):
-        return self.value.operands_generate(isinstance(self, QuasiQuote))
+        return self.value.generator_expression(isinstance(self, QuasiQuote))
 
 
 class Quote(MetaIndicator):
