@@ -43,9 +43,21 @@ def require_macro(sexp, scope):
             scope["__macro_namespace"][str(module_name) + "." + k] = v
 
 
-def macroexpand(sexp, scope):
+def macroexpand(sexp, scope=globals()):
+    expanded = True
+    while expanded:
+        sexp, expanded = macroexpand_1_and_check(sexp, scope)
+    return sexp
+
+
+def macroexpand_1(sexp, scope=globals()):
+    return macroexpand_1_and_check(sexp, scope)[0]
+
+
+def macroexpand_1_and_check(sexp, scope):
+    expanded = False
     if isinstance(sexp, Wrapper) or isinstance(sexp, MetaIndicator):
-        sexp.value = macroexpand(sexp.value, scope)
+        sexp.value, expanded = macroexpand_1_and_check(sexp.value, scope)
     elif isinstance(sexp, Expression) and len(sexp) > 0:
         [op, *operands] = sexp.list
         if str(op) == "defmacro":
@@ -53,15 +65,15 @@ def macroexpand(sexp, scope):
         elif str(op) == "require":
             sexp = require_macro(sexp, scope)
         elif str(op) in scope["__macro_namespace"]:
-            sexp = macroexpand(scope["__macro_namespace"][str(op)](*operands), scope)
+            sexp = scope["__macro_namespace"][str(op)](*operands)
+            expanded = True
         else:
-            sexp.list = list(
-                filter(
-                    lambda x: not x is None,
-                    map(lambda x: macroexpand(x, scope), sexp.list),
-                )
+            expanded_list, expanded_feedbacks = zip(
+                *map(lambda x: macroexpand_1_and_check(x, scope), sexp.list)
             )
-    return sexp
+            sexp.list = list(filter(lambda x: not x is None, expanded_list))
+            expanded = any(expanded_feedbacks)
+    return sexp, expanded
 
 
 def sexp_list_expand(sexp_list, scope):
