@@ -19,36 +19,11 @@ def define_macro(sexp, scope):
         returns=None,
         **sexp.position_info,
     )
-    assign_exp = ast.Assign(
-        targets=[
-            ast.Subscript(
-                value=ast.Subscript(
-                    value=ast.Call(
-                        func=ast.Name(
-                            id="globals", ctx=ast.Load(), **sexp.position_info
-                        ),
-                        args=[],
-                        keywords=[],
-                        **sexp.position_info,
-                    ),
-                    slice=ast.Constant(value="__macro_namespace", **sexp.position_info),
-                    ctx=ast.Load(),
-                    **sexp.position_info,
-                ),
-                slice=ast.Constant(value=str(macroname), **sexp.position_info),
-                ctx=ast.Store(),
-                **sexp.position_info,
-            )
-        ],
-        value=ast.Name(id=new_name, ctx=ast.Load(), **sexp.position_info),
-        **sexp.position_info,
-    )
     eval(
-        compile(
-            ast.Interactive(body=[def_exp, assign_exp]), "macro-defining", "single"
-        ),
+        compile(ast.Interactive(body=[def_exp]), "macro-defining", "single"),
         scope,
     )
+    scope["__macro_namespace"][str(macroname)] = scope[new_name]
 
 
 def require_macro(sexp, scope):
