@@ -54,22 +54,33 @@ def macroexpand_1(sexp, scope=globals()):
     return macroexpand_1_and_check(sexp, scope)[0]
 
 
-def macroexpand_1_and_check(sexp, scope):
+def macroexpand_1_and_check(sexp, scope=globals(), in_quasi=False):
     expanded = False
-    if isinstance(sexp, Wrapper) or isinstance(sexp, MetaIndicator):
+    if isinstance(sexp, QuasiQuote):
+        sexp.value, expanded = macroexpand_1_and_check(sexp.value, scope, in_quasi=True)
+    elif isinstance(sexp, Quote):
+        pass
+    elif isinstance(sexp, Unquote):
         sexp.value, expanded = macroexpand_1_and_check(sexp.value, scope)
+    elif isinstance(sexp, Wrapper):
+        sexp.value, expanded = macroexpand_1_and_check(
+            sexp.value, scope, in_quasi=in_quasi
+        )
     elif isinstance(sexp, Expression) and len(sexp) > 0:
         [op, *operands] = sexp.list
-        if str(op) == "defmacro":
+        if str(op) == "defmacro" and not in_quasi:
             sexp = define_macro(sexp, scope)
-        elif str(op) == "require":
+        elif str(op) == "require" and not in_quasi:
             sexp = require_macro(sexp, scope)
-        elif str(op) in scope["__macro_namespace"]:
+        elif str(op) in scope["__macro_namespace"] and not in_quasi:
             sexp = scope["__macro_namespace"][str(op)](*operands)
             expanded = True
         else:
             expanded_list, expanded_feedbacks = zip(
-                *map(lambda x: macroexpand_1_and_check(x, scope), sexp.list)
+                *map(
+                    lambda x: macroexpand_1_and_check(x, scope, in_quasi=in_quasi),
+                    sexp.list,
+                )
             )
             sexp.list = list(filter(lambda x: not x is None, expanded_list))
             expanded = any(expanded_feedbacks)
