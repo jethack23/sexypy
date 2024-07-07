@@ -48,30 +48,6 @@
   (return (and (osp.isfile filename)
                (== (sub (osp.splitext filename) 1) ".sy"))))
 
-;;; runpy injection
-(def inject-runpy []
-  (= _org-get-code-from-file runpy._get-code-from-file)
-
-  (def _get-sy-code-from-file [run-name fname]
-    (from pkgutil [read-code])
-    (= decoded-path (osp.abspath (os.fsdecode fname)))
-
-    (with [(io.open-code decoded-path) as f]
-      (= code (read-code f)))
-
-    (if (is code None)
-        (if (_is-sy-file fname)
-            (do (with [(open decoded-path "rb") as f]
-                  (= src (.decode (f.read) "utf-8")))
-                (= parsed (parse src))
-                (= ast-module (ast.Module (macroexpand-then-compile parsed)
-                                          :type-ignores []))
-                (= code (compile ast-module fname "exec")))
-            (= code (sub (_org-get-code-from-file run-name fname) 0))))
-    (return [code fname]))
-
-  (= runpy._get-code-from-file _get-sy-code-from-file))
-
 (def repl [translate]
   (while True
     (= line (input "repl > \n"))
