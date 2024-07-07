@@ -33,7 +33,21 @@ def require_transform(sexp):
         [macro_names] = optional
     else:
         macro_names = None
-    return_form = (
+    return Paren(
+        Symbol("do"),
+        Paren(Symbol("import"), Symbol("importlib")),
+        Paren(
+            Symbol("="),
+            Symbol("___imported-macros"),
+            Paren(
+                Symbol("."),
+                Paren(
+                    Symbol("importlib.import-module"),
+                    str(module_name).replace("-", "_"),
+                ),
+                Symbol("__macro_namespace"),
+            ),
+        ),
         Paren(
             Symbol("for"),
             Bracket(Symbol("k"), Symbol("v")),
@@ -87,23 +101,6 @@ def require_transform(sexp):
                 ),
                 Paren(Symbol("sub"), Symbol("___imported-macros"), Symbol("mac-name")),
             ),
-        )
-    )
-    return Paren(
-        Symbol("do"),
-        Paren(Symbol("import"), Symbol("importlib")),
-        Paren(
-            Symbol("="),
-            Symbol("___imported-macros"),
-            Paren(
-                Symbol("."),
-                Paren(
-                    Symbol("importlib.import-module"),
-                    str(module_name).replace("-", "_"),
-                ),
-                Symbol("__macro_namespace"),
-            ),
         ),
-        return_form,
         Paren(Symbol("del"), Symbol("importlib"), Symbol("___imported-macros")),
     )
