@@ -17,10 +17,11 @@
 (def ast-to-python [st]
   (return (str (ast.unparse st))))
 
-(def src-to-python [src]
+(def src-to-python [src :include-meta False]
   (return (.join "\n" (map ast-to-python
                            (macroexpand-then-compile
-                             (parse src))))))
+                             (parse src)
+                             :include-meta include-meta)))))
 
 (def black-src [src]
   (return (.rstrip (black.format-str src :mode (black.FileMode)) "\n")))
@@ -34,13 +35,17 @@
 (argparser.add-argument "-m"
                         :dest "module_name"
                         :action "store")
+(argparser.add-argument "--meta"
+                        :dest "include_meta"
+                        :action "store_true")
+
 
 (def transcompile []
   (= args (argparser.parse-args))
   (= file (osp.join (os.getcwd) args.filename))
   (with [(open file "rb") as f]
     (= org (.decode (f.read) "utf-8")))
-  (= blacked (black-src (src-to-python org)))
+  (= blacked (black-src (src-to-python org :include-meta args.include-meta)))
   (= isorted (isort.code blacked))
   (print isorted))
 
