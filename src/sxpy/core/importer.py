@@ -1,6 +1,9 @@
 import ast
 from importlib import machinery
+import io
+import os
 import os.path as osp
+import runpy
 import sys
 
 from sxpy.core.macro import macroexpand_then_compile
@@ -26,5 +29,29 @@ def _sy_source_to_code(self, data, path, _optimize=-1):
 
 
 machinery.SourceFileLoader.source_to_code = _sy_source_to_code
+
+# runpy._get_code_from_file injection
+_org_get_code_from_file = runpy._get_code_from_file
+
+
+def _sy_get_code_from_file(run_name, fname):
+    from pkgutil import read_code
+
+    decoded_path = osp.abspath(os.fsdecode(fname))
+    with io.open_code(decoded_path) as f:
+        code = read_code(f)
+    if code is None:
+        if _is_sy_file(fname):
+            with open(decoded_path, "rb") as f:
+                src = f.read().decode("utf-8")
+            parsed = parse(src)
+            ast_module = ast.Module(macroexpand_then_compile(parsed), type_ignores=[])
+            code = compile(ast_module, fname, "exec")
+        else:
+            code = _org_get_code_from_file(run_name, fname)[0]
+    return [code, fname]
+
+
+runpy._get_code_from_file = _sy_get_code_from_file
 
 sys.path_importer_cache.clear()
