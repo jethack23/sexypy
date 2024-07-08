@@ -40,4 +40,5 @@
                             mac-name)
                        (sub ___imported-macros mac-name)))
                  )
-         (del importlib ___imported-macros))))
+         ;; (del importlib)
+         (del ___imported-macros))))

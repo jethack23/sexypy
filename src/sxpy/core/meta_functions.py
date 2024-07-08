@@ -102,5 +102,5 @@ def require_transform(sexp):
                 Paren(Symbol("sub"), Symbol("___imported-macros"), Symbol("mac-name")),
             ),
         ),
-        Paren(Symbol("del"), Symbol("importlib"), Symbol("___imported-macros")),
+        Paren(Symbol("del"), Symbol("___imported-macros")),
     )
