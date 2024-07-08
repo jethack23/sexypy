@@ -69,7 +69,7 @@ def compare_compile(sexp):
     [left, *comparators] = map(expr_compile, args)
     return ast.Compare(
         left=left,
-        ops=[compare_dict[op.name]() for i in range(len(comparators))],
+        ops=[compare_dict[str(op)]() for i in range(len(comparators))],
         comparators=comparators,
         **sexp.position_info
     )
