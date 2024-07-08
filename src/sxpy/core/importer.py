@@ -1,5 +1,5 @@
 import ast
-import importlib
+from importlib import machinery
 import os.path as osp
 import sys
 
@@ -12,8 +12,9 @@ def _is_sy_file(filename):
 
 
 # # importlib.machinery.SourceFileLoader.source_to_code injection
-importlib.machinery.SOURCE_SUFFIXES.insert(0, ".sy")
-_org_source_to_code = importlib.machinery.SourceFileLoader.source_to_code
+machinery.SOURCE_SUFFIXES.insert(0, ".sy")
+_org_source_to_code = machinery.SourceFileLoader.source_to_code
+
 
 def _sy_source_to_code(self, data, path, _optimize=-1):
     if _is_sy_file(path):
@@ -24,6 +25,6 @@ def _sy_source_to_code(self, data, path, _optimize=-1):
     return _org_source_to_code(self, data, path, _optimize=_optimize)
 
 
-importlib.machinery.SourceFileLoader.source_to_code = _sy_source_to_code
+machinery.SourceFileLoader.source_to_code = _sy_source_to_code
 
 sys.path_importer_cache.clear()
