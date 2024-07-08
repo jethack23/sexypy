@@ -3,8 +3,8 @@ import importlib
 from typing import Callable, Dict
 
 from sxpy.core.compiler import def_args_parse, stmt_list_compile
-from sxpy.core.nodes import *
 from sxpy.core.meta_functions import defmacro_transform, require_transform
+from sxpy.core.nodes import *
 
 __macro_namespace: Dict[str, Callable[[Node], ast.AST]] = {}
 

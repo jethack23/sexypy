@@ -1,10 +1,10 @@
 import ast
-from importlib import machinery
 import io
 import os
 import os.path as osp
 import runpy
 import sys
+from importlib import machinery
 
 from sxpy.core.macro import macroexpand_then_compile
 from sxpy.core.parser import parse
