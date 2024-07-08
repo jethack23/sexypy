@@ -23,9 +23,10 @@
   (return
     `(do (import importlib)
          (= ___imported-macros
-            (. (importlib.import-module
-                 ~(.replace (str module-name) "-" "_"))
-               __macro_namespace))
+            (getattr (importlib.import-module
+                       ~(.replace (str module-name) "-" "_"))
+                     "__macro_namespace"
+                     {}))
          ~(conde (not macro-names)
                  `(for [k v] in (.items (.copy ___imported-macros))
                     (= (sub (.setdefault (globals) "__macro_namespace" {})

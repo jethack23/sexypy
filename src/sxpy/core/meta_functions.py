@@ -40,12 +40,13 @@ def require_transform(sexp):
             Symbol("="),
             Symbol("___imported-macros"),
             Paren(
-                Symbol("."),
+                Symbol("getattr"),
                 Paren(
                     Symbol("importlib.import-module"),
                     str(module_name).replace("-", "_"),
                 ),
-                Symbol("__macro_namespace"),
+                String('"__macro_namespace"'),
+                Brace(),
             ),
         ),
         Paren(
