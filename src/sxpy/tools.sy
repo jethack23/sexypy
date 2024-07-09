@@ -27,8 +27,7 @@
   (return (.rstrip (black.format-str src :mode (black.FileMode)) "\n")))
 
 (= argparser (argparse.ArgumentParser))
-(argparser.add-argument "filename" :nargs "?" :default "")
-(argparser.add-argument "more_args" :nargs "*" :default "")
+(argparser.add-argument "more_args" :nargs "*" :default [])
 (argparser.add-argument "-t" "--translate"
                         :dest "translate"
                         :action "store_true"
@@ -81,23 +80,18 @@
   (= args (argparser.parse-args))
 
   ;; remove options from sys.argv
-  (= argv sys.argv)
-  (= sys.executable (sub argv 0))
   (= option-removed [])
-  (while argv
-    (if (.startswith (:= larg (argv.pop)) "-")
-        (= option-removed [])
-        (option-removed.append larg)))
-  (while option-removed
-    (argv.append (option-removed.pop)))
+  (for arg in sys.argv
+    (if (.startswith arg "-")
+        (pass)
+        (option-removed.append arg)))
+  (option-removed.pop 0)
+  (= sys.argv option-removed)
 
-  (if (> (len argv) 1)
-      (.pop argv 0))
-
-  (cond (:= fname args.filename)
-        (runpy.run-path fname :run-name "__main__")
-
-        (:= mname args.module-name)
+  (cond (:= mname args.module-name)
         (runpy.run-module (.replace mname "-" "_") :run-name "__main__" :alter-sys True)
+
+        (:= more-args args.more-args)
+        (runpy.run-path (sub more-args 0) :run-name "__main__")
 
         (repl args.translate)))
