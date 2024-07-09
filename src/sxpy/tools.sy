@@ -28,6 +28,7 @@
 
 (= argparser (argparse.ArgumentParser))
 (argparser.add-argument "filename" :nargs "?" :default "")
+(argparser.add-argument "more_args" :nargs "*" :default "")
 (argparser.add-argument "-t" "--translate"
                         :dest "translate"
                         :action "store_true"
@@ -81,6 +82,7 @@
 
   ;; remove options from sys.argv
   (= argv sys.argv)
+  (= sys.executable (sub argv 0))
   (= option-removed [])
   (while argv
     (if (.startswith (:= larg (argv.pop)) "-")
@@ -88,11 +90,14 @@
         (option-removed.append larg)))
   (while option-removed
     (argv.append (option-removed.pop)))
-  
+
+  (if (> (len argv) 1)
+      (.pop argv 0))
+
   (cond (:= fname args.filename)
         (runpy.run-path fname :run-name "__main__")
 
         (:= mname args.module-name)
-        (runpy.run-module mname :run-name "__main__" :alter-sys True)
+        (runpy.run-module (.replace mname "-" "_") :run-name "__main__" :alter-sys True)
 
         (repl args.translate)))
