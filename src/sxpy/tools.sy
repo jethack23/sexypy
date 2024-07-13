@@ -42,7 +42,7 @@
 
 (def transcompile []
   (= args (argparser.parse-args))
-  (= file (osp.join (os.getcwd) args.filename))
+  (= file (osp.join (os.getcwd) (sub args.more_args 0)))
   (with [(open file "rb") as f]
     (= org (.decode (f.read) "utf-8")))
   (= blacked (black-src (src-to-python org :include-meta args.include-meta)))
