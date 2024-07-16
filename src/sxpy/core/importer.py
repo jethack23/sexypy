@@ -1,10 +1,10 @@
 import ast
+import importlib.machinery
 import io
 import os
 import os.path as osp
 import runpy
 import sys
-from importlib import machinery
 
 from sxpy.core.macro import macroexpand_then_compile
 from sxpy.core.parser import parse
@@ -15,11 +15,11 @@ def _is_sy_file(filename):
 
 
 # # importlib.machinery.SourceFileLoader.source_to_code injection
-machinery.SOURCE_SUFFIXES.insert(0, ".sy")
-_org_source_to_code = machinery.SourceFileLoader.source_to_code
+importlib.machinery.SOURCE_SUFFIXES.insert(0, ".sy")
+_org_source_to_code = importlib.machinery.SourceFileLoader.source_to_code
 
 
-def _sy_source_to_code(self, data, path, _optimize=-1):
+def _sy_source_to_code(self, data, path, *, _optimize=-1):
     if _is_sy_file(path):
         source = data.decode("utf-8")
         parsed = parse(source)
@@ -28,10 +28,10 @@ def _sy_source_to_code(self, data, path, _optimize=-1):
     return _org_source_to_code(self, data, path, _optimize=_optimize)
 
 
-machinery.SourceFileLoader.source_to_code = _sy_source_to_code
+importlib.machinery.SourceFileLoader.source_to_code = _sy_source_to_code  # type: ignore
 
 # runpy._get_code_from_file injection
-_org_get_code_from_file = runpy._get_code_from_file
+_org_get_code_from_file = runpy._get_code_from_file  # type: ignore
 
 
 def _sy_get_code_from_file(run_name, fname):
@@ -52,6 +52,6 @@ def _sy_get_code_from_file(run_name, fname):
     return [code, fname]
 
 
-runpy._get_code_from_file = _sy_get_code_from_file
+runpy._get_code_from_file = _sy_get_code_from_file  # type: ignore
 
 sys.path_importer_cache.clear()
