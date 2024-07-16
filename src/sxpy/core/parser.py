@@ -36,7 +36,7 @@ def tokenize(src):
                 ["'''", '"""', '"'],
             )
         ),
-        ["(?:'|`|~@|~)(?!\\s|$)", "meta-indicator"],
+        ["\\^?\\*{0,2}(?:'|`|~@|~)(?!\\s|$)", "meta-indicator"],
         [";[^\\n]*", "comment"],
         [
             "[+-]*(?:"
@@ -91,7 +91,7 @@ def position_info_into_list(position_info):
     )
 
 
-opening_prefix_dict = {
+wrapper_dict = {
     "": lambda value, **kwargs: value,
     "*": Starred,
     "**": DoubleStarred,
@@ -111,18 +111,40 @@ def parse(src):
             position_info
         )
         if tktype == "opening":
+            wrapper = t[:-1]
+            opening = t[-1]
+            if wrapper:
+                stack.append(
+                    wrapper_dict[wrapper](
+                        value=None, lineno=lineno, col_offset=col_offset
+                    )
+                )
             stack.append(
-                opening_prefix_dict[t[:-1]](
-                    value=opening_dict[t[-1]](
-                        lineno=lineno, col_offset=col_offset + (len(t) - 1)
-                    ),
-                    lineno=lineno,
-                    col_offset=col_offset,
+                opening_dict[opening](
+                    lineno=lineno, col_offset=col_offset + len(wrapper)
                 )
             )
         elif tktype == "meta-indicator":
+            wrapper = (
+                "**"
+                if t.startswith("**")
+                else "*"
+                if t.startswith("*")
+                else "^"
+                if t.startswith("^")
+                else ""
+            )
+            meta_ind = t[len(wrapper) :]
+            if wrapper:
+                stack.append(
+                    wrapper_dict[wrapper](
+                        value=None, lineno=lineno, col_offset=col_offset
+                    )
+                )
             stack.append(
-                meta_indicator_dict[t](value=None, lineno=lineno, col_offset=col_offset)
+                meta_indicator_dict[meta_ind](
+                    value=None, lineno=lineno, col_offset=col_offset + len(wrapper)
+                )
             )
         else:
             if tktype == "closing":
@@ -131,7 +153,9 @@ def parse(src):
                 e.update_dict("end_col_offset", end_col_offset)
             else:
                 e = token_parse(t, tktype, position_info)
-            while stack and isinstance(stack[-1], MetaIndicator):
+            while stack and (
+                isinstance(stack[-1], MetaIndicator) or isinstance(stack[-1], Wrapper)
+            ):
                 popped = stack.pop()
                 popped.value = e
                 popped.update_dict("end_lineno", end_lineno)
@@ -184,7 +208,7 @@ def star_token_parse(token, tktype, position_info):
     num_star = 2 if token[1] == "*" else 1
     inner_position = {**position_info}
     inner_position["col_offset"] += num_star
-    return opening_prefix_dict["*" * num_star](
+    return wrapper_dict["*" * num_star](
         token_parse(token[slice(num_star, None)], tktype, inner_position),
         **position_info,
     )
