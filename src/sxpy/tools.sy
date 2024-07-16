@@ -11,6 +11,7 @@
 (import black)
 (import isort)
 
+(from sxpy.core.nodes *)
 (from sxpy.core.parser [parse])
 (from sxpy.core.macro [macroexpand-then-compile])
 
