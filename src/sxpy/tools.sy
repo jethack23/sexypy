@@ -51,9 +51,10 @@
   (= file (osp.join (os.getcwd) (sub args.more_args 0)))
   (with [(open file "rb") as f]
     (= org (.decode (f.read) "utf-8")))
-  (= blacked (black-src (src-to-python org :include-meta args.include-meta)))
-  (= isorted (isort.code blacked))
-  (print isorted))
+  (= pysrc (src-to-python org :include-meta args.include-meta))
+  (= isorted (isort.code pysrc))
+  (= blacked (black-src isorted))
+  (print blacked))
 
 (def _is-sy-file [filename]
   (return (and (osp.isfile filename)
