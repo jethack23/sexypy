@@ -159,7 +159,7 @@ def for_compile(sexp, async_p=False):
     iterable = body.popleft()
     lastx = body[-1]
     [then, orelse] = (
-        [body[:-1], lastx.operands]
+        [list(body)[:-1], lastx.operands]
         if isinstance(lastx, Paren) and lastx.op == "else"
         else [body, []]
     )
