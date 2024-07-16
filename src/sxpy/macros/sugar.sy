@@ -23,5 +23,14 @@
           (return `(-> ~f ~@rest)))
       (return `(-> (~f ~x) ~@rest))))
 
+(defmacro ->> [x *fs]
+  (if (== 0 (len fs))
+      (return x))
+  (= [f *rest] fs)
+  (if (isinstance f Paren)
+      (do (f.list.append x)
+          (return `(->> ~f ~@rest)))
+      (return `(-> (~f ~x) ~@rest))))
+
 (defmacro fn [*body]
   (return `(lambda ~@body)))
