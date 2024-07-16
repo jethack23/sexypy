@@ -25,7 +25,12 @@
                              :include-meta include-meta)))))
 
 (def black-src [src]
-  (return (.rstrip (black.format-str src :mode (black.FileMode)) "\n")))
+  (try
+    (= rst (.rstrip (black.format-str src :mode (black.FileMode)) "\n"))
+    (except
+      (print src)
+      (raise Exception)))
+  (return rst))
 
 (= argparser (argparse.ArgumentParser))
 (argparser.add-argument "more_args" :nargs "*" :default [])
