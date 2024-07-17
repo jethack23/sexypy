@@ -9,7 +9,7 @@ from sxpy.core.utils import augassignop_dict
 def tokenize(src):
     lines = src.split("\n")
     tokens = deque([])
-    int_simple = "\\d+(?:_\\d+)*"
+    int_simple = r"\d+[\dA-Za-z]*(?:_[\dA-Za-z]+)*"
     float_simples = [
         "\\d+(?:_\\d+)*\\.\\d+(?:_\\d+)*",
         "\\d+(?:_\\d+)*\\.\\d*",
