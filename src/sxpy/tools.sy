@@ -1,7 +1,7 @@
 (require sxpy.macros *)
 
-(import ast)
 (import argparse)
+(import ast)
 (import io)
 (import os)
 (import os.path as osp)
@@ -33,22 +33,13 @@
   (return rst))
 
 (= argparser (argparse.ArgumentParser))
-(argparser.add-argument "more_args" :nargs "*" :default [])
-(argparser.add-argument "-t" "--translate"
-                        :dest "translate"
-                        :action "store_true"
-                        :default False)
-(argparser.add-argument "-m"
-                        :dest "module_name"
-                        :action "store")
 (argparser.add-argument "--meta"
                         :dest "include_meta"
                         :action "store_true")
 
-
 (def transcompile []
-  (= args (argparser.parse-args))
-  (= file (osp.join (os.getcwd) (sub args.more_args 0)))
+  (= [args more-args] (argparser.parse-known-args))
+  (= file (osp.join (os.getcwd) (sub more-args 0)))
   (with [(open file "rb") as f]
     (= org (.decode (f.read) "utf-8")))
   (= pysrc (src-to-python org :include-meta args.include-meta))
@@ -84,21 +75,19 @@
         (print "Exception: " e)))))
 
 (def run []
-  (= args (argparser.parse-args))
+  (cond (< (len sys.argv) 2)
+        (repl False)
 
-  ;; remove options from sys.argv
-  (= option-removed [])
-  (for arg in sys.argv
-    (if (.startswith arg "-")
-        (pass)
-        (option-removed.append arg)))
-  (option-removed.pop 0)
-  (= sys.argv option-removed)
+        (== (sub sys.argv 1) "-m")
+        (do (sys.argv.pop 1)
+            (= mname (sys.argv.pop 1))
+            (runpy.run-module (.replace mname "-" "_") :run-name "__main__" :alter-sys True))
 
-  (cond (:= mname args.module-name)
-        (runpy.run-module (.replace mname "-" "_") :run-name "__main__" :alter-sys True)
+        (== (sub sys.argv 1) "-t")
+        (repl True)
 
-        (:= more-args args.more-args)
-        (runpy.run-path (sub more-args 0) :run-name "__main__")
+        (do (= fpath (sys.argv.pop 1))
+            (runpy.run-path fpath :run-name "__main__"))))
 
-        (repl args.translate)))
+(if (== __name__ "__main__")
+    (run))
