@@ -53,26 +53,40 @@
 
 (def repl [translate]
   (while True
-    (= line (input "repl > \n"))
-    (= src "")
-    (while (!= line "")
-      (+= src (+ "\n" line))
-      (= line (input "")))
     (try
-      (do (= parsed (parse src))
-          (= stl (macroexpand-then-compile parsed (globals)))
-          (if translate
-              (do (print "python translation")
+      (= paren-depth 0)
+      (= line (input "repl> "))
+      (= src line)
+      (while True
+        (for c in line
+          (cond (== c "(")
+                (+= paren-depth 1)
+                (== c ")")
+                (-= paren-depth 1)))
+        (if (== paren-depth 0)
+            (break))
+        (= line (input ""))
+        (+= src (+ "\n" line)))
+      (try
+        (do (= parsed (parse src))
+            (= stl (macroexpand-then-compile parsed (globals)))
+            (if translate
+                (do ;; (print "python translation")
                   (print (.join "\n" (list (map ast-to-python stl))))
-                  (print "")))
-          (print "result")
-          (for st stl
-            (eval (compile (ast.Interactive :body [st]) "" "single")
-                  (globals)))
-          (print "\n"))
-      (except [Exception as e]
-        (raise e)
-        (print "Exception: " e)))))
+                  ;; (print "")
+                  ))
+            ;; (print "result")
+            (for st stl
+              (eval (compile (ast.Interactive :body [st]) "" "single")
+                    (globals)))
+            ;; (print "\n")
+            )
+        (except [Exception as e]
+          (raise e)
+          (print "Exception: " e)))
+      (except [KeyboardInterrupt]
+        (print "\nKeyboard Interrupt")
+        (continue)))))
 
 (def run []
   (cond (< (len sys.argv) 2)
