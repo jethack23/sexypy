@@ -34,3 +34,6 @@
 
 (defmacro fn [*body]
   (return `(lambda ~@body)))
+
+(defmacro comment [*body]
+  (pass))
