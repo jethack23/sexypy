@@ -39,4 +39,4 @@
   (pass))
 
 (defmacro when [condition *body]
-  (return `(if condition (do ~@body))))
+  (return `(if ~condition (do ~@body))))
