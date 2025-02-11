@@ -50,42 +50,54 @@
 (def _is-sy-file [filename]
   (return (and (osp.isfile filename)
                (== (sub (osp.splitext filename) 1) ".sy"))))
-
 (def repl [translate]
+  (= scope {})
   (while True
     (try
-      (= paren-depth 0)
-      (= line (input "repl> "))
-      (= src line)
-      (while True
-        (for c in line
-          (cond (== c "(")
-                (+= paren-depth 1)
-                (== c ")")
-                (-= paren-depth 1)))
-        (if (== paren-depth 0)
-            (break))
-        (= line (input ""))
-        (+= src (+ "\n" line)))
-      (try
-        (do (= parsed (parse src))
-            (= stl (macroexpand-then-compile parsed (globals)))
-            (if translate
-                (do ;; (print "python translation")
-                  (print (.join "\n" (list (map ast-to-python stl))))
-                  ;; (print "")
-                  ))
-            ;; (print "result")
-            (for st stl
-              (eval (compile (ast.Interactive :body [st]) "" "single")
-                    (globals)))
-            ;; (print "\n")
-            )
-        (except [Exception as e]
-          (raise e)
-          (print "Exception: " e)))
+      (do
+        (= paren-depth 0)
+        (= in-string False)
+        (= line (input "repl> "))
+        (= src line)
+        (while True
+          (for c in line
+            (cond in-string
+                  (if (== c "\"")
+                      (= in-string False)
+                      (continue))
+
+                  (== c "\"")
+                  (= in-string True)
+                  
+                  (in c "([{")
+                  (+= paren-depth 1)
+                  
+                  (in c ")]}")
+                  (-= paren-depth 1)))
+          (if (== paren-depth 0)
+              (break))
+          (= line (input ""))
+          (+= src (+ "\n" line)))
+        (= parsed (parse src))
+        (= stl (macroexpand-then-compile parsed scope))
+        (if translate
+            (do ;; (print "python translation")
+              (print (.join "\n" (list (map ast-to-python stl))))
+              ;; (print "")
+              ))
+        ;; (print "result")
+        (for st stl
+          (eval (compile (ast.Interactive :body [st]) "" "single")
+                scope))
+        ;; (print "\n")
+        )
+      (except [EOFError as e]
+        (raise e))
       (except [KeyboardInterrupt]
         (print "\nKeyboard Interrupt")
+        (continue))
+      (except [Exception as e]
+        (print "Exception: " e)
         (continue)))))
 
 (def run []
