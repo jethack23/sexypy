@@ -37,3 +37,6 @@
 
 (defmacro comment [*body]
   (pass))
+
+(defmacro when [condition *body]
+  (return `(if condition (do ~@body))))
