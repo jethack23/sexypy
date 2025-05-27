@@ -13,7 +13,7 @@ python = "~3.11"
 
 [tool.poetry.scripts]
 spy = "sxpy:run"
-s2py = "sxpy:transcompile"
+s2py = "sxpy:s2py"
 
 
 [tool.poetry.group.dev.dependencies]
