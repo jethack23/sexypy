@@ -1,0 +1,61 @@
+site_name: SexyPy
+
+plugins:
+  - macros:
+      module_name: docs/version_macro
+  - search
+  - mike
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.instant
+    - content.action.edit
+    - content.tabs.link
+    - header.repo
+    - header.version
+  palette:
+    scheme: default
+  icon:
+    repo: fontawesome/brands/git-alt
+
+repo_url: https://github.com/jethack23/sexypy
+repo_name: jethack23/sexypy
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: index.md
+  - Usage:
+      - Getting Started: usage/getting-started.md
+      - Command Line Interface: usage/cli.md
+  - Syntax:
+      - Overview: syntax/overview.md
+      - Statements: syntax/statements.md
+      - Expressions: syntax/expressions.md
+      - Macros: syntax/macros.md
+  # - Usage: usage.md
+  # - API Reference: api.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+
+extra:
+  version:
+    provider: mike
+  analytics:
+    provider: google
+    property: G-4S2VF6T0D0
