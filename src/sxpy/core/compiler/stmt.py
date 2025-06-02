@@ -495,7 +495,7 @@ def stmt_compile(sexp, decorator_list=None):
         if classdef_p(sexp)
         else functiondef_compile(sexp, decorator_list, async_p=True)
         if str(sexp.op) == "async-def"
-        else with_compile(sexp, async_p=True)
+        else for_compile(sexp, async_p=True)
         if str(sexp.op) == "async-for"
         else with_compile(sexp, async_p=True)
         if str(sexp.op) == "async-with"
