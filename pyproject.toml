@@ -2,8 +2,11 @@
 name = "sexypy"
 version = "0.7.1"
 description = "Python with S-expression Grammar"
-authors = ["Jethack"]
+authors = ["Jethack <jethack23@gmail.com>"]
+license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/jethack23/sexypy"
+repository = "https://githuc.com/jethack23/sexypy"
 packages = [
     {include = "sxpy", from = "src"}
 ]
