@@ -1,5 +1,7 @@
 site_name: SexyPy
 
+copyright: Copytright &copy; 2023-2025 Jethack
+
 plugins:
   - macros:
       module_name: docs/version_macro
@@ -10,8 +12,10 @@ theme:
   name: material
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.indexes
     - navigation.instant
+    - navigation.footer
     - content.action.edit
     - content.tabs.link
     - header.repo
@@ -34,9 +38,7 @@ nav:
       - Overview: syntax/overview.md
       - Statements: syntax/statements.md
       - Expressions: syntax/expressions.md
-      - Macros: syntax/macros.md
-  # - Usage: usage.md
-  # - API Reference: api.md
+  - Macros: macros.md
 
 markdown_extensions:
   - pymdownx.highlight:

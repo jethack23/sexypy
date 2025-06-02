@@ -49,7 +49,8 @@ spy -m unittest
 ## Environment
 - [ ] Test on more python versions
 - [ ] Some IDE plugins like hy-mode and jedhy for better editing experience.
-## Syntatic Sugar
-- [ ] `as->` macro
+## Macro System
+- [ ] `as->` macro for syntactic sugar
+- [ ] `gensym` for avoiding name collision
 ## Python AST
 - [ ] `type_comment` never considered. Later, it should be covered
