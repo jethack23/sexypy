@@ -2,7 +2,8 @@
 Sxpy's macro system is highly inspired by Clojure's macro system.
 You can check out the [Chapter 7](https://www.braveclojure.com/read-and-eval/) and [Chapter 8](https://www.braveclojure.com/writing-macros/) of "Brave Clojure" for more information about Clojure's macro system.
 ## Expression Nodes
-These nodes are defined in `src/sexypy/core/nodes.py`.   
+These nodes are defined in `src/sexypy/core/nodes.py`.
+
 You can check out how to manipulate these nodes in
 
 - the definitions of nodes themselves

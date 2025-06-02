@@ -30,7 +30,9 @@ repo_name: jethack23/sexypy
 edit_uri: edit/main/docs/
 
 nav:
-  - Home: index.md
+  - Home:
+      - Overview: index.md
+  - Why Sxpy?: why-sxpy.md
   - Usage:
       - Getting Started: usage/getting-started.md
       - Command Line Interface: usage/cli.md

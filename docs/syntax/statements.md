@@ -165,13 +165,13 @@ while condition:
 ## `if`
 Sxpy version
 ```python
-(if clause
+(if test
     then
     else)
 ```
 Python version
 ```python
-if clause:
+if test:
     then
 else:
     else
@@ -180,13 +180,13 @@ else:
 If you want to use multiple statements in `then-body` or `else-body`, you can use `do` block.
 Sxpy version
 ```python
-(if clause
+(if test
     (do then1 then2)
     (do else1 else2))
 ```
 Python version
 ```python
-if clause:
+if test:
     then1
     then2
 else:
