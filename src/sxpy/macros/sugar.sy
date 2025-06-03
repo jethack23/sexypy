@@ -1,18 +1,14 @@
 (defmacro cond [*body]
-  (def recur [*body]
-    (if (< (len body) 4)
-        (return `(if ~@body))
-        (do (= [test then *orelse] body)
-            (return `(if ~test ~then ~(recur *orelse))))))
-  (return (recur *body)))
+  (if (< (len body) 4)
+      (return `(if ~@body))
+      (do (= [test then *orelse] body)
+          (return `(if ~test ~then (cond ~@orelse))))))
 
 (defmacro conde [*body]
-  (def recur [*body]
-    (if (< (len body) 4)
-        (return `(ife ~@body))
-        (do (= [test then *orelse] body)
-            (return `(ife ~test ~then ~(recur *orelse))))))
-  (return (recur *body)))
+  (if (< (len body) 4)
+      (return `(ife ~@body))
+      (do (= [test then *orelse] body)
+          (return `(ife ~test ~then (conde ~@orelse))))))
 
 (defmacro -> [x *fs]
   (if (== 0 (len fs))
