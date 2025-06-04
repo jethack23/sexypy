@@ -1,7 +1,5 @@
 # SexyPy : the Geekiest Python Ever!
-SexyPy stands for **S-ex**_pression-ish(_**y**_)_ **Py**_thon_.   
-Highly inspired by Clojure and Hy.   
-Once I loved to use Hy when I need to use python. But as I started to learn Clojure, similarity between two languages confused me. I want a language more straightforward to being python but in S-expression so that I can exploit structural editing and metaprogramming by macro. Thus I decided to start this project.
+[![PyPI version](https://badge.fury.io/py/sexypy.svg)](https://badge.fury.io/py/sexypy)
 
 # Documentation
 You can find the documentation at [https://jethack23.github.io/sexypy/](https://jethack23.github.io/sexypy/).
