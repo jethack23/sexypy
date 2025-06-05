@@ -25,12 +25,15 @@
 (def ast-to-python [st]
   (return (str (ast.unparse st))))
 
+(def src-to-python-org [src :include-meta False]
+  (return (.join "\n" (map ast-to-python
+                           (macroexpand-then-compile
+                             (parse src)
+                             SCOPE
+                             :include-meta include-meta)))))
+
 (def src-to-python [src :include-meta False]
-  (= raw-pysrc (.join "\n" (map ast-to-python
-                                (macroexpand-then-compile
-                                  (parse src)
-                                  SCOPE
-                                  :include-meta include-meta))))
+  (= raw-pysrc (src-to-python-org src :include-meta include-meta))
   (return (format-python-source raw-pysrc)))
 
 (def black-src [src]

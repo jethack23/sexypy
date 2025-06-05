@@ -1,14 +1,14 @@
 (import ast)
 (import unittest)
 
-(from sxpy.tools [src-to-python])
+(from sxpy.tools [src-to-python-org])
 (from .utils [stmt-to-dump])
 
 (defmacro self-retrieval-assert [src]
   (return `(equal-test ~src ~src)))
 
 (defmacro equal-test [a b]
-  (return `(self.assertEqual (src-to-python ~a) ~b)))
+  (return `(self.assertEqual (src-to-python-org ~a) ~b)))
 
 (class TestNumberMethods [unittest.TestCase]
 
@@ -54,42 +54,42 @@ c\""
 (class TestListMethods [unittest.TestCase]
 
   (def test-list [self]
-    (self.assertEqual (src-to-python "[1 2]") "[1, 2]"))
+    (self.assertEqual (src-to-python-org "[1 2]") "[1, 2]"))
 
   (def test-star [self]
-    (self.assertEqual (src-to-python "[*[1 2]]")
+    (self.assertEqual (src-to-python-org "[*[1 2]]")
                       "[*[1, 2]]")
-    (self.assertEqual (src-to-python "[1 2 *[3 4]]")
+    (self.assertEqual (src-to-python-org "[1 2 *[3 4]]")
                       "[1, 2, *[3, 4]]")))
 
 (class TestTupleMethods [unittest.TestCase]
 
   (def test-tuple [self]
-    (self.assertEqual (src-to-python "(, 1 2)") "(1, 2)"))
+    (self.assertEqual (src-to-python-org "(, 1 2)") "(1, 2)"))
 
   (def test-star [self]
-    (self.assertEqual (src-to-python "(, *[1 2])")
+    (self.assertEqual (src-to-python-org "(, *[1 2])")
                       "(*[1, 2],)")
-    (self.assertEqual (src-to-python "(, 1 2 *[3 4])")
+    (self.assertEqual (src-to-python-org "(, 1 2 *[3 4])")
                       "(1, 2, *[3, 4])")))
 
 
 (class TestDictMethods [unittest.TestCase]
 
   (def test-dict [self]
-    (self.assertEqual (src-to-python "{1 2}") "{1: 2}"))
+    (self.assertEqual (src-to-python-org "{1 2}") "{1: 2}"))
 
   (def test-double-star [self]
-    (self.assertEqual (src-to-python "{1 2 **a **{3 4}}")
+    (self.assertEqual (src-to-python-org "{1 2 **a **{3 4}}")
                       "{1: 2, **a, **{3: 4}}")))
 
 
 (class TestSetMethods [unittest.TestCase]
 
   (def test-set [self]
-    (self.assertEqual (src-to-python "{, 1 2}")
+    (self.assertEqual (src-to-python-org "{, 1 2}")
                       "{1, 2}"))
 
   (def test-star [self]
-    (self.assertEqual (src-to-python "{, *[1 2 3] 2 3 4}")
+    (self.assertEqual (src-to-python-org "{, *[1 2 3] 2 3 4}")
                       "{*[1, 2, 3], 2, 3, 4}")))
